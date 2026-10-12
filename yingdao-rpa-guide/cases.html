@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实战案例 | 影刀RPA 教程</title>
+  <meta name="description" content="影刀RPA 实战案例：Excel批量数据处理、网页数据采集电商比价、邮件自动发送+系统录入、OA流程批量下载发票合同归档四大真实案例，含指令分类表与通用报错速查。">
+  <meta name="keywords" content="影刀RPA实战,影刀Excel自动化,影刀网页采集,影刀电商比价,影刀邮件,影刀OA下载发票合同">
+  <meta property="og:title" content="影刀RPA 实战案例">
+  <meta property="og:description" content="四大真实案例：Excel批量处理、网页采集、邮件+录入、OA下载归档">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="assets/styles.css?v=20261010a">
+</head>
+<body>
+
+<div class="sidebar-overlay" onclick="setSidebar(false)"></div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <button class="topnav-toggle" aria-label="打开导航菜单" onclick="setTopNav(true)">☰</button>
+    <a class="brand" href="index.html"><span class="logo-dot"></span>影刀RPA 教程</a>
+    <nav class="topnav-links" aria-label="专栏导航">
+      <a href="index.html">首页</a>
+      <a href="basics.html">基础使用</a>
+      <a href="cases.html" class="active">实战案例</a>
+      <a href="ai.html">结合AI</a>
+      <a href="sap.html">操作SAP</a>
+    </nav>
+    <div class="topnav-search">
+      <input type="text" id="globalSearch" placeholder="搜索关键词..." autocomplete="off" aria-label="站内搜索">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+</nav>
+
+<div class="docs-shell">
+  <aside class="docs-sidebar" id="docsSidebar">
+    <nav class="sb-accordion" id="sbAccordion" aria-label="本页目录"></nav>
+  </aside>
+
+  <main class="docs-main">
+    <div class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>实战案例</span></div>
+    <h1 class="page-title">实战案例</h1>
+    <p class="page-subtitle">四个真实场景案例 · 从指令分类到完整流程 · 含反爬与踩坑一线经验</p>
+    <div class="page-meta">
+      <span class="meta-tag accent">4 个真实案例</span>
+      <span class="meta-tag">含流程图</span>
+      <span class="meta-tag">含报错速查</span>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat"><div class="num">3</div><div class="lbl">实战案例</div></div>
+      <div class="stat"><div class="num">12</div><div class="lbl">指令大类</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl">反爬策略</div></div>
+      <div class="stat"><div class="num">9</div><div class="lbl">通用报错</div></div>
+    </div>
+
+    <section id="commands">
+      <h2>影刀指令分类速查</h2>
+      <p>影刀指令面板有数百条指令，按场景归类。核心概念四个：<strong>应用</strong>（最大容器）、<strong>指令</strong>（流程每一步）、<strong>元素库</strong>（网页元素定位存储，页面改版只需重捕获一个）、<strong>数据表</strong>（内存二维表，采集中转站）<sup><a href="#cite-1">[1]</a></sup>。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>大类</th><th>下属指令</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td>① 网页自动化</td><td>打开/关闭网页、刷新、前进后退、切换标签页/iframe、执行JS、等待加载</td><td>90%时间与网页交互；打开网页务必保存"网页对象"变量供后续指令使用</td></tr>
+            <tr><td>② 元素操作</td><td>点击、输入文本、获取文本/属性、判断存在、等待出现/消失、获取相似元素列表、鼠标悬停</td><td>四套定位：默认捕获/XPath/CSS/正则；复杂页面用XPath的contains</td></tr>
+            <tr><td>③ 流程控制</td><td>如果/否则、条件循环while、遍历列表forEach、跳出/继续、退出、Try/Catch/Finally</td><td>条件可组合(与/或/非)；循环务必设退出条件防死循环</td></tr>
+            <tr><td>④ 变量与数据</td><td>设置变量、全局变量、列表操作(增删查)、字典操作(键值对)</td><td>列表用索引取值，字典用key取值</td></tr>
+            <tr><td>⑤ 数据处理</td><td>读取/写入Excel、写入单元格、导出表格、清空、读取CSV、JSON解析、内容替换、删除重复行、筛选</td><td>读取Excel返回二维列表；大数量用区域写入比逐格写快一个数量级</td></tr>
+            <tr><td>⑥ 文件操作</td><td>遍历文件夹、文件存在、创建/复制/移动/重命名/删除、读写文本文件</td><td>—</td></tr>
+            <tr><td>⑦ 系统与工具</td><td>固定等待、获取当前时间、打开程序、运行命令行、截屏、剪贴板、HTTP请求</td><td>HTTP请求可调API绕过网页操作，稳定性更高</td></tr>
+            <tr><td>⑧ 邮件自动化</td><td>发送邮件(SMTP，支持多收件人/抄送/密送/附件/HTML正文)</td><td>需配置SMTP服务器+授权码（非登录密码）</td></tr>
+            <tr><td>⑨ 鼠标键盘/图像</td><td>鼠标点击/移动、键盘输入、图像识别、OCR文字识别</td><td>网页元素定位不了时的兜底方案；验证码识别准确率有限</td></tr>
+            <tr><td>⑩ AI/魔法指令</td><td>魔法指令(自然语言生成代码)、智能识别</td><td>每周有免费额度；适合非标组件（智能日期选择器等）</td></tr>
+            <tr><td>⑪ 通知/系统联动</td><td>飞书群通知、钉钉/企微通知、定时触发器/高级任务计划(Cron)</td><td>机器人webhook地址+签名校验密钥</td></tr>
+            <tr><td>⑫ 进阶(需点亮Python)</td><td>Python代码、Pandas、Requests、正则、Selenium、ADB(手机)</td><td>影刀内置Python环境无需安装</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout"><p><strong>新手最易忽略的5个指令：</strong>① 判断元素是否存在（弹窗/登录态检测）② 等待元素出现（替代固定等待）③ 获取相似元素列表（批量采集神器）④ Try/Catch（异常容错）⑤ 切换框架iframe（元素捕获了却点不到，99%是没切iframe）<sup><a href="#cite-1">[1]</a></sup>。</p></div>
+    </section>
+
+    <section id="case-excel">
+      <h2>案例1：Excel 批量数据处理自动化</h2>
+      <h3>适用场景</h3>
+      <p>公司每月订单数据为"乱表"——有空格、重复行、日期格式不统一、金额列混着文本和数字。需整理成标准格式，再按地区分类导出成多个文件。适合：财务对账、订单整理、报表清洗、分表合并等纯数据处理场景（不需要打开网页）<sup><a href="#cite-2">[2]</a></sup>。</p>
+
+      <h3>整体流程</h3>
+      <p>启动Excel → 读取区域到二维列表 → 循环处理（清洗/去重/格式化）→ 按条件筛选拆分 → 写入不同工作表/文件 → 保存关闭。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[启动Excel] --> B[读取区域到二维列表]
+    B --> C[清洗空格/去重]
+    C --> D[统一日期/金额格式]
+    D --> E[按地区筛选拆分]
+    E --> F[写入不同工作表/文件]
+    F --> G[文件名加时间戳]
+    G --> H[保存关闭Excel]
+        </pre>
+        <figcaption>图1：Excel批量处理流程</figcaption>
+      </figure>
+
+      <h3>关键步骤</h3>
+      <ol class="steps">
+        <li><strong>启动Excel</strong>：「启动Excel」指令打开目标文件（绝对路径）。</li>
+        <li><strong>读取数据</strong>：「读取Excel内容」→ 已使用区域方式，返回二维列表存入变量。</li>
+        <li><strong>清洗空格</strong>：「内容替换」查找=空格、替换=空、匹配方式选"包含"（非"等于"）。</li>
+        <li><strong>去重</strong>：「删除重复行」选中数据区域；去重前先排序让重复行相邻。</li>
+        <li><strong>统一日期格式</strong>：Python代码块 <code>datetime.strptime</code> 解析多种格式 → <code>strftime('%Y-%m-%d')</code> 统一输出。</li>
+        <li><strong>统一金额格式</strong>：文本转数字 <code>float()</code>，处理混入的文本字符。</li>
+        <li><strong>按地区筛选拆分</strong>：「筛选」按地区列筛选 → 结果写入不同工作表/文件。</li>
+        <li><strong>文件名加时间戳</strong>：<code>datetime.now().strftime('%Y%m%d')</code> 生成如 <code>华东订单_20250626.xlsx</code>。</li>
+        <li><strong>保存关闭</strong>：勾选保存。</li>
+      </ol>
+
+      <h3>涉及的影刀指令</h3>
+      <p><strong>Excel类</strong>：启动Excel、读取Excel内容、写入Excel内容、写入单元格值、内容替换、删除重复行、筛选、关闭Excel（Excel + Excel扩展指令集）<sup><a href="#cite-3">[3]</a></sup>；<strong>流程控制</strong>：遍历列表、如果/否则；<strong>进阶</strong>：Python代码块（复杂清洗，可直接读写影刀变量）。</p>
+
+      <h3>踩坑提示</h3>
+      <div class="callout warning">
+        <p>⚠️ <strong>循环Excel内容时，循环项是列表不是字符串</strong>：直接拼接会报 <code>Can not convert Array to String</code>，取索引 <code>loop_excel[0]</code>。</p>
+        <p>⚠️ <strong>读取Excel单元格返回字符串</strong>，价格参与计算必须先 <code>float()</code> 转换。</p>
+        <p>⚠️ <strong>写入日期时间数据会少8小时</strong>（UTC时区问题）：写入前转字符串 <code>str(datetime_obj)</code>。</p>
+        <p>⚠️ <strong>带括号数字 <code>(123)</code> 写入会被Excel自动转成 <code>-123</code></strong>：写入前转字符串类型或加空格前缀。</p>
+        <p>⚠️ <strong>Excel被占用报"被呼叫方拒绝接收呼叫"</strong>：office进程处于编辑状态，确保文件关闭，读写前后加 <code>sleep(1)</code> 缓解。</p>
+        <p>⚠️ <strong>大数量写入慢</strong>：5000行+先拼好二维列表用区域写入一次性写入，比循环逐格写快一个数量级<sup><a href="#cite-4">[4]</a></sup>。</p>
+      </div>
+    </section>
+
+    <section id="case-web">
+      <h2>案例2：网页数据采集（电商比价）</h2>
+      <h3>适用场景</h3>
+      <p>采集电商平台商品标题、价格、销量、店铺名，多页翻页采集，写入Excel做比价分析。也适用：B站数据采集、公众号文章采集、招聘网站薪资统计等<sup><a href="#cite-5">[5]</a></sup>。影刀优势在"需要登录态、要模拟真人操作、页面结构复杂、交付给业务岗自己跑"的场景。</p>
+
+      <h3>整体流程</h3>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[安装浏览器插件] --> B[打开网页/搜索]
+    B --> C[登录态检测]
+    C --> D[等待商品列表加载]
+    D --> E[获取相似元素列表]
+    E --> F[循环提取字段]
+    F --> G[数据清洗]
+    G --> H[写入Excel]
+    H --> I{有下一页?}
+    I -->|是| J[翻页+随机延时]
+    J --> E
+    I -->|否| K[保存Excel关闭]
+        </pre>
+        <figcaption>图2：网页采集流程</figcaption>
+      </figure>
+
+      <h3>关键步骤</h3>
+      <ol class="steps">
+        <li><strong>安装浏览器插件</strong>：主界面右上角→扩展→安装Chrome扩展；装完确认已启用；影刀浏览器与系统Chrome不能同时运行（会冲突）。</li>
+        <li><strong>打开网页</strong>：「打开网页」浏览器选Chrome，网址填目标URL，<strong>保存网页对象至变量</strong> <code>web_page</code>（后续所有指令靠它）。</li>
+        <li><strong>登录态检测</strong>：<code>if not browser.wait_appear('用户头像', timeout=5): raise Exception('未登录')</code>——拼多多搜索必须登录，否则几页后跳验证码。</li>
+        <li><strong>等待商品列表加载</strong>：「等待元素(web)」等商品标题出现，超时给15秒，比固定等待更可靠。</li>
+        <li><strong>获取相似元素列表</strong>：「获取相似元素列表(web)」捕获第一个商品卡片，工具自动识别整组同结构元素。</li>
+        <li><strong>循环提取字段</strong>：遍历元素列表，对每个商品用XPath提取：标题、价格（拼多多拆成整数+小数两个span需拼接）、销量、店铺名。</li>
+        <li><strong>数据清洗</strong>：价格去货币符号 <code>re.sub(r'[^\d.]','',price_str)</code> 转float；销量"1.2万+"换算成12000；区间价取 <code>split('~')[0]</code>。</li>
+        <li><strong>写入Excel</strong>：维护 <code>next_row</code> 计数器，每写一行+1；文件名带时间戳避免覆盖。</li>
+        <li><strong>翻页判断</strong>：获取"下一页"按钮class属性，判断是否含 <code>disabled</code> → 不含则点击+随机延时，含则退出循环。</li>
+        <li><strong>随机延时（反爬核心）</strong>：<code>sleep(random.uniform(2.5, 5.0))</code>，范围要够大。</li>
+        <li><strong>弹窗处理</strong>：采集循环前检测关闭弹窗按钮，<code>timeout=3</code> 超时返回False不影响主流程。</li>
+      </ol>
+
+      <h3>反爬应对策略</h3>
+      <ol>
+        <li><strong>随机延时</strong>：<code>sleep(random.uniform(1.5, 4.0))</code>，范围至少1.5秒差值；固定 <code>sleep(1)</code> 一眼被识别<sup><a href="#cite-5">[5]</a></sup>。</li>
+        <li><strong>开启模拟真人操作</strong>：勾选"仿真移动鼠标""仿真操作停顿"，最小停顿1秒、最大3秒。</li>
+        <li><strong>滚动模拟</strong>：每翻一页先滚到底部再滚回来，<code>browser.scroll_to(location='bottom', behavior='smooth')</code>。</li>
+        <li><strong>监听网络请求</strong>：价格走XHR接口不在DOM时，<code>start_monitor_network()</code> 监听+<code>get_responses(url='api/search')</code> 拿接口数据，比解析DOM更稳。</li>
+        <li><strong>构造URL翻页</strong>：减少点击动作降低检测概率，如 <code>f'...?search_key=无线耳机&page={page}'</code>。</li>
+        <li><strong>复用登录态</strong>：用固定浏览器用户目录，首次手动扫码登录，后续跳过登录。</li>
+      </ol>
+
+      <h3>踩坑提示</h3>
+      <div class="callout warning">
+        <p>⚠️ <strong>浏览器插件没装</strong>：「打开网页」能打开但所有元素指令报"找不到元素"，排查一整个下午。</p>
+        <p>⚠️ <strong>浏览器自动更新</strong>：某天流程全跑不通，多半是浏览器夜里自动升级了；关掉自动更新。</p>
+        <p>⚠️ <strong>class名被混淆</strong>（拼多多随机串）：XPath的 <code>contains(@class,'goods-title-text')</code> 比CSS精确类名更稳。</p>
+        <p>⚠️ <strong>页面刷新导致元素失效</strong>：每次循环重新获取相似元素列表，不要持有旧对象。</p>
+        <p>⚠️ <strong>懒加载商品不出来</strong>：每次搜索完要滚动几下，否则只采到前几条。</p>
+        <p>⚠️ <strong>CSV编码乱码</strong>：UTF-8直接导出在Excel打开变乱码，用带BOM的UTF-8<sup><a href="#cite-6">[6]</a></sup>。</p>
+      </div>
+    </section>
+
+    <section id="case-mail">
+      <h2>案例3：邮件自动发送 + 系统数据录入</h2>
+      <h3>适用场景</h3>
+      <p>每天/每周自动登录业务系统（ERP/CRM/数据看板）→ 采集数据 → 汇总计算 → 自动发送带附件的邮件给领导/团队。也适用：批量发送个性化工资条邮件、生日祝福邮件、订单通知、报表分发。这是自动化流程的"最后一公里"<sup><a href="#cite-7">[7]</a></sup>。</p>
+
+      <h3>整体流程</h3>
+      <p>（定时触发）→ 打开浏览器 → 登录业务系统 → 等待数据加载 → 批量抓取数据 → 写入Excel保存 → 汇总计算 → 构造邮件正文 → 发送邮件（带附件）→ 关闭浏览器 → （飞书通知）。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[定时触发器] --> B[打开浏览器]
+    B --> C[登录业务系统]
+    C --> D[等待数据加载]
+    D --> E[批量数据抓取]
+    E --> F[写入Excel保存]
+    F --> G[汇总计算]
+    G --> H[构造邮件正文]
+    H --> I[发送邮件带附件]
+    I --> J[关闭浏览器]
+    J --> K[飞书通知]
+        </pre>
+        <figcaption>图3：邮件+系统录入流程</figcaption>
+      </figure>
+
+      <h3>关键步骤</h3>
+      <ol class="steps">
+        <li><strong>定时触发</strong>：发布应用后在任务计划添加「定时触发器」，每日触发设08:00；可勾选跳过中国大陆法定节假日；高级用Cron表达式如 <code>0 6 * * *</code>。</li>
+        <li><strong>打开浏览器</strong>：「打开网页」指令，保存网页对象变量。</li>
+        <li><strong>登录业务系统</strong>：捕获用户名输入框→「输入文本」填用户名；捕获密码框→填密码；捕获登录按钮→「点击元素」。</li>
+        <li><strong>等待数据加载</strong>：「等待元素(web)」选一个只有数据加载后才出现的元素（如表格单元格），超时5-15秒。</li>
+        <li><strong>批量数据抓取</strong>：「批量数据抓取」/「获取相似元素列表」选表格行作为相似元素组，每列分别捕获单元格文本。</li>
+        <li><strong>写入Excel保存</strong>：「写入Excel内容」先写表头行→循环体内逐行写数据→勾选保存关闭。</li>
+        <li><strong>汇总计算</strong>：For循环遍历数据列表累加销售额、统计客户数；或用Python代码块。</li>
+        <li><strong>构造邮件正文</strong>：拼接字符串 <code>body = "【每日数据汇报】\n日期：" & date & "\n销售额：" & total_sales</code>；或HTML格式更美观。</li>
+        <li><strong>发送邮件</strong>：「发送邮件」指令配置：
+          <ul>
+            <li><strong>SMTP服务器</strong>：<code>smtp.qq.com</code>（QQ）/ <code>smtp.163.com</code>（163）/ <code>smtp.exmail.qq.com</code>（企业微信）</li>
+            <li><strong>端口</strong>：465（SSL）/ 587（TLS）</li>
+            <li><strong>发件人密码：授权码</strong>（非登录密码！QQ邮箱设置→账户→开启POP3/SMTP服务→生成16位授权码）<sup><a href="#cite-8">[8]</a></sup></li>
+            <li><strong>收件人</strong>：多收件人分号隔开 <code>a@xx.com;b@xx.com</code></li>
+            <li><strong>附件</strong>：选文件，可填变量 <code>report_path</code></li>
+          </ul>
+        </li>
+        <li><strong>关闭浏览器</strong>：「关闭网页」。</li>
+        <li><strong>（可选）飞书通知</strong>：「飞书群通知」指令填webhook地址+签名密钥。</li>
+      </ol>
+
+      <h3>踩坑提示</h3>
+      <div class="callout warning">
+        <p>⚠️ <strong>授权码 ≠ 登录密码</strong>：QQ邮箱需先开启POP3/SMTP服务生成16位授权码；填错报 <code>Authentication failed</code><sup><a href="#cite-8">[8]</a></sup>。</p>
+        <p>⚠️ <strong>端口配置错误</strong>报 <code>Connection refused</code>：QQ/163用465(SSL)，Outlook/Gmail用587(TLS)。</p>
+        <p>⚠️ <strong>定时任务不执行</strong>：Windows锁屏/睡眠导致静默失败——电源设置改"从不睡眠"；发版后确认任务计划指向新版本。</p>
+        <p>⚠️ <strong>授权码不要明文写在流程中</strong>：用变量引用，SMTP配置单独存变量/配置文件。</p>
+        <p>⚠️ <strong>SMTP发送频率限制</strong>：批量发邮件不要过快，加间隔延时防被标记垃圾邮件。</p>
+        <p>⚠️ <strong>无人值守前提</strong>：机器不休眠、屏幕分辨率固定1920×1080、浏览器窗口固定、不能有系统弹窗打断。</p>
+        <p>⚠️ <strong>定时跑出错没人知道</strong>：加通知机制，成功发消息、失败发报错信息；在Finally块放通知指令<sup><a href="#cite-9">[9]</a></sup>。</p>
+      </div>
+    </section>
+
+    <section id="case-oa">
+      <h2>案例4：OA流程批量下载发票/合同文件并按流程名归档</h2>
+      <p class="case-intro">适用场景：财务/采购每月需从OA系统（泛微/致远/蓝凌等）的审批流程中，逐条打开、下载附件区的发票与合同文件，再按流程标题建文件夹归档。手工逐个点开下载、重命名、拖拽归类，一条流程耗时2-3分钟，月度几百条流程极耗人力。用影刀RPA遍历流程列表→自动下载附件→按流程名建目录归档，全程无人值守，并产出下载清单Excel留痕<sup><a href="#cite-1">[1]</a></sup><sup><a href="#cite-10">[10]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[1.打开OA并登录] --> B[2.进入流程中心/待办列表]
+    B --> C[3.获取流程列表相似元素]
+    C --> D{4.是否还有未处理流程?}
+    D -- 否 --> Z[14.输出下载清单Excel并通知]
+    D -- 是 --> E[5.进入流程详情页]
+    E --> F[6.读取流程标题作为文件夹名]
+    F --> G[7.创建以流程名命名的文件夹]
+    G --> H[8.定位附件区域]
+    H --> I{9.附件区有发票/合同?}
+    I -- 无 --> M[13.标记无附件 记录到清单]
+    I -- 有 --> J[10.遍历附件逐个下载]
+    J --> K[11.移动文件至对应文件夹]
+    K --> L[12.记录到下载清单Excel]
+    L --> M
+    M --> N[返回列表 取下一条]
+    N --> D
+        </div>
+        <p class="diagram-caption">图：OA流程批量下载归档流程（循环遍历+异常分支）</p>
+      </div>
+
+      <h3>关键步骤</h3>
+      <ol class="steps">
+        <li><strong>打开OA并登录</strong>：「打开网页」指令打开OA地址，保存网页对象变量；用「输入文本」填账号密码，「点击元素」点登录。OA多为B/S架构网页系统，走浏览器自动化即可<sup><a href="#cite-10">[10]</a></sup>。</li>
+        <li><strong>进入流程中心</strong>：捕获并点击"流程中心/待办/已办"菜单；「等待元素(web)」等流程列表表格出现，超时给15秒。</li>
+        <li><strong>获取流程列表</strong>：「获取相似元素列表(web)」捕获一条流程行，工具自动识别整组同结构行，得到 <code>flow_rows</code> 列表。若分页，循环点击"下一页"+等待。</li>
+        <li><strong>循环遍历每条流程</strong>：用「遍历列表」对 <code>flow_rows</code> 循环；每轮先「获取元素文本」提取流程标题（如"采购申请-2026-1024"）作为文件夹名。</li>
+        <li><strong>进入流程详情</strong>：「点击元素」打开该流程；详情页加载慢，「等待元素(web)」等附件区标题（如"相关附件"）出现。</li>
+        <li><strong>创建文件夹</strong>：用「创建文件夹」指令，路径 = 归档根目录 + 流程标题。先「文件夹是否存在」判断，避免重名报错；同名时追加序号如 <code>采购申请-2026-1024_2</code>。</li>
+        <li><strong>定位附件区并判断有无附件</strong>：「判断元素是否存在」检查附件区是否有文件链接；无附件则走异常分支，标记"无附件"写回清单，跳过下载。</li>
+        <li><strong>遍历附件逐个下载</strong>：「获取相似元素列表」取全部附件链接 → 循环「点击元素」触发下载。浏览器下载需配置：<br>
+          <ul>
+            <li>影刀浏览器设置下载路径为固定目录（如 <code>D:\OA下载临时区</code>），避免每次弹"另存为"</li>
+            <li>Chrome 需「关闭浏览器下载确认弹窗」或用影刀浏览器静默下载</li>
+            <li>每次点击后「固定等待」2-3秒等下载启动，并轮询临时目录文件数变化确认下载完成</li>
+          </ul>
+        </li>
+        <li><strong>移动文件至对应文件夹</strong>：下载完成后用「遍历文件夹」扫描临时下载区新文件 → 「移动文件」至刚建的流程名文件夹。注意：大文件下载需等待，可用「文件存在」轮询+超时判断。</li>
+        <li><strong>记录下载清单</strong>：每处理一个附件，用「写入Excel内容」追加一行到清单：流程标题、附件名、保存路径、下载时间、状态（成功/失败/无附件）。留痕便于财务核对。</li>
+        <li><strong>返回列表取下一条</strong>：「点击元素」返回流程列表页（或浏览器后退），「等待元素」等列表重新加载，进入下一轮循环。</li>
+        <li><strong>输出清单并通知</strong>：循环结束后保存清单Excel，可用「发送邮件」附清单发财务，或「飞书群通知」发送完成消息<sup><a href="#cite-9">[9]</a></sup>。</li>
+      </ol>
+
+      <h3>涉及的影刀指令</h3>
+      <ul>
+        <li><strong>浏览器/元素</strong>：打开网页、点击元素、输入文本、获取元素文本、判断元素是否存在、等待元素出现、获取相似元素列表、切换标签页（详情可能新开Tab）</li>
+        <li><strong>文件操作</strong>：创建文件夹、文件夹是否存在、遍历文件夹、移动文件、文件存在、复制文件（备份）</li>
+        <li><strong>数据处理</strong>：读取Excel（下载清单模板）、写入Excel内容（追加记录）、设置变量（流程标题/路径）</li>
+        <li><strong>流程控制</strong>：遍历列表（流程行/附件）、条件循环（轮询下载完成）、如果/否则（有无附件）、Try/Catch（单条失败不中断）</li>
+        <li><strong>系统与通知</strong>：固定等待、获取当前时间（清单时间戳）、发送邮件/飞书群通知（结果通知）</li>
+      </ul>
+
+      <h3>踩坑提示</h3>
+      <div class="callout warning">
+        <p>⚠️ <strong>下载弹窗"另存为"卡住</strong>：Chrome默认下载会弹保存对话框。用影刀浏览器并设固定下载路径关闭弹窗；或Chrome设置→下载→关闭"下载前询问保存位置"。</p>
+        <p>⚠️ <strong>附件名相同覆盖</strong>：不同流程附件可能同名（都叫"发票.pdf"）。下载到临时区时加流程标题前缀，或下载后立即移动到对应文件夹避免冲突。</p>
+        <p>⚠️ <strong>大文件未下载完就移动</strong>：移动时报"文件被占用"。用「文件存在」+「固定等待」轮询，或判断文件大小不再变化再移动。</p>
+        <p>⚠️ <strong>流程标题含非法字符</strong>：文件夹名不能含 <code>\ / : * ? " &lt; &gt; |</code>。用Python块 <code>re.sub(r'[\\/:*?&quot;&lt;&gt;|]','_',title)</code> 清洗后再建目录。</p>
+        <p>⚠️ <strong>分页/懒加载</strong>：流程列表分页时，只抓首页会漏。循环点击"下一页"并「等待元素」等新列表加载；列表懒加载则先滚动到底。</p>
+        <p>⚠️ <strong>附件在iframe里</strong>：附件区常嵌在iframe，「切换框架(iframe)」后再捕获元素，否则报"找不到元素"。</p>
+        <p>⚠️ <strong>OA登录态过期</strong>：流程跑到一半被踢出登录。循环内每条流程前「判断元素是否存在」检查登录态，失效则重新登录子流程。</p>
+        <p>⚠️ <strong>单条失败整批中断</strong>：用Try/Catch包裹单条流程处理，异常时记录失败原因到清单继续下一条，不要让一条卡死整批。</p>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2>通用报错速查表</h2>
+      <p>跨案例通用，遇到报错先查此表<sup><a href="#cite-2">[2]</a></sup><sup><a href="#cite-5">[5]</a></sup>：</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>报错信息</th><th>原因</th><th>解决方案</th></tr></thead>
+          <tbody>
+            <tr><td><code>UIAError: 等待元素超时</code></td><td>元素没加载/XPath写错</td><td>DevTools验证XPath；增大timeout到30s</td></tr>
+            <tr><td><code>Can not convert Array to String</code></td><td>列表直接写Excel单元格</td><td>取索引 <code>list[0]</code> 或 <code>str()</code> 转换</td></tr>
+            <tr><td><code>被呼叫方拒绝接收呼叫</code></td><td>Excel被占用/编辑状态</td><td>确保Excel关闭；读写前后加 <code>sleep(1)</code></td></tr>
+            <tr><td><code>find_all 返回空列表</code></td><td>class名混淆/页面未加载完</td><td><code>contains(@class,'...')</code> 模糊匹配；检查iframe</td></tr>
+            <tr><td><code>无效的窗口句柄</code></td><td>网页对象失效</td><td>重新获取网页对象</td></tr>
+            <tr><td>未找到控件</td><td>元素未加载/在iframe里/新标签页</td><td>五步排查：校验→iframe→新窗口→动态class→等待</td></tr>
+            <tr><td>翻页后数据和上页相同</td><td>翻页没生效页面没刷新</td><td><code>wait_disappear</code> 等旧内容消失再采集</td></tr>
+            <tr><td>日期少8小时</td><td>Excel时区问题</td><td>转文本再写入</td></tr>
+            <tr><td>定时不执行</td><td>Windows锁屏待机</td><td>电源设置改"从不睡眠"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <nav class="page-pager" aria-label="上一篇与下一篇导航">
+      <a href="basics.html" class="pager-prev"><span class="pg-label">← 上一篇</span><span class="pg-title">基础使用指南</span></a>
+      <a href="ai.html" class="pager-next"><span class="pg-label">下一篇 →</span><span class="pg-title">影刀结合AI</span></a>
+    </nav>
+  </main>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部">↑</button>
+
+<footer>
+  <div class="container">
+    <div class="sources">
+      <h2>参考来源</h2>
+      <ol>
+        <li id="cite-1"><span class="src-title">影刀RPA新手教程_影刀指令分类大全与速查, 12大类指令与新手易忽略的5个指令。</span><a href="https://blog.csdn.net/Ruanjianwang888/article/details/161862857" target="_blank" rel="noopener">https://blog.csdn.net/Ruanjianwang888/article/details/161862857</a></li>
+        <li id="cite-2"><span class="src-title">影刀RPA新手教程5个真实案例带你从入门到独立开发, 案例1 Excel批量处理。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/166986675" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/166986675</a></li>
+        <li id="cite-3"><span class="src-title">影刀RPA数据提取实战：网页抓取、翻页与跨系统取数。</span><a href="https://blog.csdn.net/weixin_29051149/article/details/166821012" target="_blank" rel="noopener">https://blog.csdn.net/weixin_29051149/article/details/166821012</a></li>
+        <li id="cite-4"><span class="src-title">影刀RPA | 这6个Excel数据处理常见问题, 时区、括号数字、被占用等踩坑。</span><a href="https://m.163.com/dy/article/GQPL7CRN0514VN15.html" target="_blank" rel="noopener">https://m.163.com/dy/article/GQPL7CRN0514VN15.html</a></li>
+        <li id="cite-5"><span class="src-title">影刀RPA新手教程：拼多多采集全流程实战——商品数据翻页与反爬处理。</span><a href="https://blog.csdn.net/Ruanjianwang888/article/details/167163456" target="_blank" rel="noopener">https://blog.csdn.net/Ruanjianwang888/article/details/167163456</a></li>
+        <li id="cite-6"><span class="src-title">影刀RPA B站数据采集实战。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/162667884" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/162667884</a></li>
+        <li id="cite-7"><span class="src-title">影刀RPA新手教程：邮件发送基础完全指南——用影刀自动发邮件的最简单方法。</span><a href="https://blog.csdn.net/linyanRPA/article/details/162530533" target="_blank" rel="noopener">https://blog.csdn.net/linyanRPA/article/details/162530533</a></li>
+        <li id="cite-8"><span class="src-title">影刀——发送邮件（授权码获取方法）, QQ邮箱POP3/SMTP授权码。</span><a href="https://blog.csdn.net/m0_73557953/article/details/146868671" target="_blank" rel="noopener">https://blog.csdn.net/m0_73557953/article/details/146868671</a></li>
+        <li id="cite-9"><span class="src-title">影刀RPA新手教程：从采集到定时任务——两周掌握日常自动化技能, 飞书通知与邮件。</span><a href="https://blog.csdn.net/Ruanjianwang888/article/details/167035447" target="_blank" rel="noopener">https://blog.csdn.net/Ruanjianwang888/article/details/167035447</a></li>
+        <li id="cite-10"><span class="src-title">影刀RPA官方文档：文件操作指令（创建文件夹/遍历文件夹/移动文件/文件存在）与网页自动化指令。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/help" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/help</a></li>
+      </ol>
+    </div>
+  </div>
+  <div class="copy">© 2026 影刀RPA 使用教程知识库 · 内容整理自公开权威资料，仅供学习参考，版权归原作者所有</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
+<script src="assets/search-index.js?v=20261010a" defer></script>
+<script src="assets/charts.js?v=20261010a" defer></script>
+<script src="assets/app.js?v=20261010a" defer></script>
+</body>
+</html>

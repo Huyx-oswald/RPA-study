@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基础使用指南 | 影刀RPA 教程</title>
+  <meta name="description" content="影刀RPA 基础使用指南：安装注册、界面概览、核心概念、元素拾取、搭建第一个流程、调试运行、定时调度与常见问题。">
+  <meta name="keywords" content="影刀RPA基础,影刀安装,影刀界面,元素拾取,影刀调试,影刀定时任务">
+  <meta property="og:title" content="影刀RPA 基础使用指南">
+  <meta property="og:description" content="从安装到搭建第一个流程的完整入门指南">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="assets/styles.css?v=20261010a">
+</head>
+<body>
+
+<div class="sidebar-overlay" onclick="setSidebar(false)"></div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <button class="topnav-toggle" aria-label="打开导航菜单" onclick="setTopNav(true)">☰</button>
+    <a class="brand" href="index.html"><span class="logo-dot"></span>影刀RPA 教程</a>
+    <nav class="topnav-links" aria-label="专栏导航">
+      <a href="index.html">首页</a>
+      <a href="basics.html" class="active">基础使用</a>
+      <a href="cases.html">实战案例</a>
+      <a href="ai.html">结合AI</a>
+      <a href="sap.html">操作SAP</a>
+    </nav>
+    <div class="topnav-search">
+      <input type="text" id="globalSearch" placeholder="搜索关键词..." autocomplete="off" aria-label="站内搜索">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+</nav>
+
+<div class="docs-shell">
+  <aside class="docs-sidebar" id="docsSidebar">
+    <nav class="sb-accordion" id="sbAccordion" aria-label="本页目录"></nav>
+  </aside>
+
+  <main class="docs-main">
+    <div class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>基础使用指南</span></div>
+    <h1 class="page-title">基础使用指南</h1>
+    <p class="page-subtitle">从安装注册到搭建、调试、调度第一个自动化流程的完整入门路径</p>
+    <div class="page-meta">
+      <span class="meta-tag accent">入门必修</span>
+      <span class="meta-tag">8 个知识点</span>
+      <span class="meta-tag">含踩坑速查</span>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat"><div class="num">8</div><div class="lbl">核心知识点</div></div>
+      <div class="stat"><div class="num">5</div><div class="lbl">步搭首个流程</div></div>
+      <div class="stat"><div class="num">4</div><div class="lbl">触发器类型</div></div>
+      <div class="stat"><div class="num">7</div><div class="lbl">FAQ踩坑</div></div>
+    </div>
+
+    <section id="install">
+      <h2>安装与注册</h2>
+      <h3>系统要求</h3>
+      <ul>
+        <li><strong>操作系统</strong>：Windows 7 及以上（推荐 Win10/11 64位）、macOS 10.12+、信创系统。跨平台是影刀核心优势之一<sup><a href="#cite-1">[1]</a></sup>。</li>
+        <li><strong>内存</strong>：至少 4GB RAM（8GB+ 推荐）；硬盘至少 2GB 可用空间（安装包约 600MB）。</li>
+      </ul>
+
+      <h3>下载与安装</h3>
+      <ol class="steps">
+        <li>访问<strong>影刀官网</strong> <a href="https://www.yingdao.com/client-download/" target="_blank" rel="noopener">yingdao.com/client-download</a>，根据系统选对应版本下载。</li>
+        <li>双击安装包（Windows 下形如 <code>ShadowBot-5.30.37-x64.exe</code>），UAC 提示点"是"。</li>
+        <li>选择安装位置（建议非系统盘），依次"下一步"接受许可协议至安装完成（约 1-3 分钟）。</li>
+        <li>桌面出现影刀RPA 快捷方式，启动即可。建议安装前关闭杀毒软件避免误拦截<sup><a href="#cite-1">[1]</a></sup>。</li>
+      </ol>
+
+      <h3>注册与登录</h3>
+      <ol class="steps">
+        <li>首次启动点"注册"，输入手机号获取验证码，设置密码完成注册。</li>
+        <li>用注册账号登录进入主界面，新用户通常享 30 天免费体验期<sup><a href="#cite-2">[2]</a></sup>。</li>
+      </ol>
+
+      <h3>浏览器插件安装（网页自动化必需）</h3>
+      <p>影刀网页自动化需配合浏览器插件，支持 Chrome 和 Edge：</p>
+      <ul>
+        <li><strong>Chrome/Edge</strong>：客户端 → 右上角头像 → "工具" → "自动化插件" → 选对应浏览器 → "安装插件" → 重启浏览器 → 在 <code>chrome://extensions/</code> 确认开发者模式与影刀插件已开启<sup><a href="#cite-1">[1]</a></sup>。</li>
+        <li><strong>影刀浏览器</strong>：影刀自带，开箱即用、静默运行、环境独立，<strong>云端运行时推荐使用影刀浏览器</strong>（云端无本地 Chrome 配置）<sup><a href="#cite-3">[3]</a></sup>。</li>
+      </ul>
+      <div class="callout warning"><p><strong>常见插件故障：</strong>装失败先完全退出浏览器重试；装后无法用检查浏览器版本是否过旧；"打开网页"能打开但元素指令全报"找不到元素"，多半是插件没装/未启用——这是新手最高频踩坑。</p></div>
+    </section>
+
+    <section id="ui">
+      <h2>客户端界面概览</h2>
+      <p>影刀客户端由两大核心界面组成：<strong>综合管理界面</strong>（应用/任务管理）与<strong>应用开发界面</strong>（流程开发）<sup><a href="#cite-4">[4]</a></sup>。</p>
+
+      <h3>综合管理界面</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>功能区块</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>我的应用</td><td>管理已开发应用，查看/运行/编辑/发布/分享</td></tr>
+            <tr><td>我的指令</td><td>自定义指令的开发与管理</td></tr>
+            <tr><td>计划执行</td><td>设置流程定时执行或触发条件</td></tr>
+            <tr><td>BOT市场</td><td>官方/企业/个人开发应用的市场</td></tr>
+            <tr><td>个人中心</td><td>账号、快捷键、插件工具、启动项、错误处理、续费</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>应用开发界面（核心编辑区）</h3>
+      <p>开发界面分 5 个功能区，简记"<strong>左侧指令库 → 中间画布 → 右侧属性面板</strong>，底部日志/变量面板，右下角全局变量入口"<sup><a href="#cite-4">[4]</a></sup><sup><a href="#cite-5">[5]</a></sup>：</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph LR
+    subgraph 应用开发界面
+        A1["① 顶部工具栏<br/>录制/抓取/运行/单步调试"]
+        A2["② 指令区(左)<br/>网页/桌面/流程控制/数据处理"]
+        A3["③ 流程编排画布(中)<br/>拖拽堆叠指令"]
+        A4["④ 物料区(右)<br/>捕获元素/元素库/数据表/日志"]
+        A5["⑤ 流程变量(右下)<br/>子流程/Python/全局变量"]
+    end
+    A2 --> A3 --> A4
+    A1 -.调度.-> A3
+    A5 -.作用域.-> A3
+        </pre>
+        <figcaption>图1：影刀应用开发界面五大功能区</figcaption>
+      </figure>
+      <div class="callout"><p><strong>右下角全局变量入口：</strong>全局变量按钮在右下角，需点开小箭头才显示，新手常找不到。<strong>Python 块引用全局变量必须用 <code>package.variables['变量名']</code> 格式</strong>，直接用变量名会报错<sup><a href="#cite-5">[5]</a></sup>。</p></div>
+    </section>
+
+    <section id="concepts">
+      <h2>核心概念</h2>
+      <h3>流程（应用 / Process）</h3>
+      <p>影刀采用<strong>积木式流程搭建</strong>，通过"拖、拉、拽"实现。一条流程由多条指令按逻辑堆叠构成。一个"应用"可包含主流程和多个<strong>子流程</strong>（可视化子流程），子流程可被调用以模块化设计；还支持新建 <strong>Python 模块</strong>调用影刀自动化接口开发高级流程<sup><a href="#cite-6">[6]</a></sup>。</p>
+
+      <h3>指令 / 组件（Command）</h3>
+      <p><strong>一条指令 = 一个动作</strong>。指令构成四要素：<code>对象（如网页对象）+ 元素（如某按钮）+ 操作（如点击）+ 结果（保存到变量）</code>。双击或拖动指令会弹出配置界面，配置完毕的指令出现在流程编排区<sup><a href="#cite-6">[6]</a></sup>。</p>
+      <p><strong>魔法指令</strong>是影刀特色功能，基于大语言模型 AI Coding，用户描述需求即可自动生成流程指令（详见<a href="ai.html">影刀结合AI</a>）。</p>
+
+      <h3>变量（Variable）</h3>
+      <p>变量是"给数据起一个名字"，方便后续流程直呼其名调用<sup><a href="#cite-5">[5]</a></sup><sup><a href="#cite-7">[7]</a></sup>：</p>
+      <ul>
+        <li><strong>局部变量</strong>：指令输出保存的变量，在当前流程内使用。</li>
+        <li><strong>全局变量</strong>：可被所有流程统一使用。<strong>注意：全局变量必须先在指令输出部分出现且影刀运行到该指令时才生效</strong>（执行到前是默认值，执行后变为新值）。</li>
+      </ul>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>类型</th><th>说明</th><th>取值方式</th></tr></thead>
+          <tbody>
+            <tr><td>字符串</td><td>文本</td><td>直接引用</td></tr>
+            <tr><td>数字</td><td>整数/小数</td><td>直接引用</td></tr>
+            <tr><td>列表</td><td>有序集合</td><td>索引 <code>list[0]</code></td></tr>
+            <tr><td>字典</td><td>键值对</td><td>键 <code>dict['key']</code></td></tr>
+            <tr><td>JSON</td><td>HTTP 接口返回</td><td>Python 块 <code>json.loads()</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="capture">
+      <h2>元素拾取（元素捕获）</h2>
+      <p>元素定位是 RPA 最核心技能。影刀提供<strong>三种定位方式</strong><sup><a href="#cite-8">[8]</a></sup>：</p>
+      <ol>
+        <li><strong>元素捕获</strong>（默认）：影刀自动记录元素路径+限制条件。</li>
+        <li><strong>CSS 选择器</strong>：CSS 语法定位，性能好，适合简单属性匹配。</li>
+        <li><strong>XPath 选择器</strong>：功能最强，支持模糊匹配（contains）、上下文定位、层级定位等。</li>
+      </ol>
+
+      <h3>元素捕获操作步骤</h3>
+      <ol class="steps">
+        <li>点击"捕获新元素"（快捷键 <kbd>Alt+Ctrl+P</kbd>）。</li>
+        <li>鼠标悬浮到目标元素，等待红框包围。</li>
+        <li>按住 <kbd>Ctrl</kbd> 键单击鼠标完成捕获。</li>
+        <li>系统自动生成元素选择器，保存到元素库。</li>
+      </ol>
+
+      <h3>元素捕获原理</h3>
+      <p>影刀记录元素路径（如 <code>div &gt; div &gt; span</code>）和限制条件（如 <code>id="submit"</code>、<code>class="btn-primary"</code>）。<strong>页面结构变 → 路径可能失效；元素属性变 → 限制条件失效</strong><sup><a href="#cite-8">[8]</a></sup>。</p>
+
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[开始捕获] --> B{悬浮到目标}
+    B -->|红框包围| C[Ctrl+单击]
+    B -->|未出现红框| F[检查插件/iframe]
+    C --> D[生成选择器]
+    D --> E[存入元素库]
+    F --> B
+        </pre>
+        <figcaption>图2：元素捕获流程</figcaption>
+      </figure>
+
+      <div class="callout success"><p><strong>提升稳定性的关键：</strong>双击进入元素编辑器，<strong>只勾选稳定属性</strong>（id/name），<strong>取消不稳定属性</strong>（动态 class、会变的 innerText）；动态属性用 <code>contains</code> 模糊匹配；用"等待元素出现"指令替代固定等待。</p></div>
+    </section>
+
+    <section id="first-flow">
+      <h2>搭建第一个流程</h2>
+      <p>以"<strong>自动打开百度搜索关键词</strong>"为例<sup><a href="#cite-6">[6]</a></sup><sup><a href="#cite-2">[2]</a></sup>：</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph LR
+    A["① 新建PC<br/>自动化应用"] --> B["② 打开网页<br/>保存网页对象变量"]
+    B --> C["③ 填写输入框<br/>捕获百度搜索框"]
+    C --> D["④ 点击元素<br/>捕获百度一下按钮"]
+    D --> E["⑤ 运行<br/>自动执行流程"]
+        </pre>
+        <figcaption>图3：第一个流程五步</figcaption>
+      </figure>
+      <ol class="steps">
+        <li><strong>新建应用</strong>：打开影刀 → "新建" → 创建 PC 自动化应用 → 进入开发界面。</li>
+        <li><strong>添加"打开网页"指令</strong>：左侧"网页自动化" → 拖"打开网页"到画布 → 右侧配置浏览器选 Chrome/影刀浏览器，网址填 <code>https://www.baidu.com</code> → 网页对象保存到变量 <code>web_page</code>。</li>
+        <li><strong>添加"填写输入框(web)"</strong>：拖指令 → 元素编辑器中捕获百度搜索框（悬浮红框后 Ctrl+单击）→ 输入"影刀RPA"。</li>
+        <li><strong>添加"点击元素(web)"</strong>：拖指令 → 捕获百度首页"百度一下"按钮。</li>
+        <li><strong>运行</strong>：点顶部"运行"，影刀自动执行：打开百度 → 输入 → 点击搜索。</li>
+      </ol>
+      <div class="callout"><p><strong>进阶：</strong>加"获取元素文本内容(web)"指令获取第一条搜索结果文本，赋值给变量，再用"打印输出"指令在底部运行日志栏显示。指令添加支持快捷键 <kbd>Ctrl+Shift+P</kbd>；流程录制功能可录制操作自动生成流程，进一步降低门槛。</p></div>
+    </section>
+
+    <section id="debug">
+      <h2>调试与运行</h2>
+      <p><strong>只有在编辑器中打开应用时才能调试</strong>；计划任务、API 调度、后台调度或应用外右键运行时不能调试<sup><a href="#cite-9">[9]</a></sup>。</p>
+
+      <h3>断点</h3>
+      <ul>
+        <li>打断点：鼠标移到指令行号后空白处点击，指令前出现<strong>橙色圆点</strong>即为断点。</li>
+        <li>执行到断点<strong>自动暂停，暂停时该指令尚未执行</strong>，可在下方调试变量面板查看所有变量实时值和类型。</li>
+      </ul>
+
+      <h3>单步调试与继续</h3>
+      <ul>
+        <li><strong>继续</strong>：执行到下一个断点（含循环中再次执行到同一断点）或结束。</li>
+        <li><strong>单步调试</strong>：每次点击多执行一条指令。</li>
+      </ul>
+
+      <h3>调试一般步骤</h3>
+      <ol class="steps">
+        <li>运行应用，定位报错指令。</li>
+        <li>在报错指令前打断点，再次运行，在变量面板查看实时值（如发现 Excel 对象变量为 None，说明缺少"启动 Excel/获取激活 Excel"赋值）。</li>
+        <li>修复后取消断点再运行，遇到新报错重复上述过程。</li>
+        <li>循环中用"继续"逐轮观察变量，发现异常值（如空行 <code>[None]</code>）后修正数据。</li>
+      </ol>
+
+      <h3>运行日志</h3>
+      <p>编辑器底部"运行日志"栏实时显示执行结果。<strong>本地日志文件路径</strong>：Win+R 输入 <code>%localappdata%\ShadowBot\log</code> 打开日志文件夹，按时间倒序查看最新日志文件<sup><a href="#cite-10">[10]</a></sup>。排查连续失败时，靠日志时间线还原每轮卡在哪一步。</p>
+    </section>
+
+    <section id="schedule">
+      <h2>定时调度与机器人管理</h2>
+      <h3>定时触发器配置</h3>
+      <ol class="steps">
+        <li>先将应用<strong>发版</strong>（发布到云端）——触发器仅支持已发版或已获取的应用<sup><a href="#cite-11">[11]</a></sup>。</li>
+        <li>客户端顶部菜单栏 → "触发器" → "新建" → "定时触发器"。</li>
+        <li>配置：名称、应用、频率（每分/每时/每天/每周/每月，或高级 Crontab）、定时结束时间、是否排队执行、运行超时强制结束分钟数。</li>
+        <li>确定后启用，在运行日志中查看触发器执行记录<sup><a href="#cite-12">[12]</a></sup>。</li>
+      </ol>
+
+      <h3>触发器四种类型</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>触发器</th><th>触发方式</th></tr></thead>
+          <tbody>
+            <tr><td>定时触发器</td><td>按设定周期（含 Crontab 高级表达式）定时运行</td></tr>
+            <tr><td>文件触发器</td><td>监控文件变化，如新文件出现时自动处理</td></tr>
+            <tr><td>热键触发器</td><td>键盘快捷键手动启动任务</td></tr>
+            <tr><td>邮件触发器</td><td>收到特定邮件时触发自动化流程</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warning"><p><strong>注意：</strong>触发器只能执行已发版或已获取的应用；<strong>含交互对话框的应用定时执行会卡住</strong>——定时器无人点击确认会一直等待，需把对话框内容写死到程序中。</p></div>
+
+      <h3>本地 vs 云端选型</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>场景</th><th>推荐方案</th><th>原因</th></tr></thead>
+          <tbody>
+            <tr><td>自己日常用</td><td>本地</td><td>免费、灵活、随时调整</td></tr>
+            <tr><td>给客户交付</td><td>云端</td><td>不依赖客户电脑、7×24 运行</td></tr>
+            <tr><td>企业内部使用</td><td>本地服务器</td><td>数据不出内网、安全性高</td></tr>
+            <tr><td>高频定时任务</td><td>云端</td><td>专业调度、执行记录完整</td></tr>
+            <tr><td>手机自动化</td><td>本地</td><td>云端不支持 ADB 连接</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="faq">
+      <h2>常见问题 FAQ</h2>
+
+      <h4>Q1：流程运行报错"找不到目标元素"怎么办？</h4>
+      <p>最常见问题。原因：页面结构/属性变化导致捕获的路径或限制条件失效。解决：①双击进入元素编辑器，只勾选稳定属性（id/name），取消不稳定属性；②改用 XPath/CSS 手写定位；③用 <code>contains</code> 模糊匹配动态属性；④加"等待元素出现"指令替代固定等待<sup><a href="#cite-13">[13]</a></sup>。</p>
+
+      <h4>Q2：循环操作时报"未找到指定ID的元素"？</h4>
+      <p>循环中网页刷新，导致刷新前捕获的元素失效。解决：循环内每次重新获取元素，或用更稳定的 XPath 定位<sup><a href="#cite-14">[14]</a></sup>。</p>
+
+      <h4>Q3：云端运行结果和本地不一致？</h4>
+      <p>浏览器版本差异、网络延迟、云端无本地 Cookie/登录态。解决：云端用影刀浏览器；等待时间适当增加；把登录子流程放主流程最前（云端每次都是全新环境）<sup><a href="#cite-3">[3]</a></sup>。</p>
+
+      <h4>Q4：定时触发器执行时流程卡住不动？</h4>
+      <p>应用含交互对话框，定时器无人点击确认会一直等待。解决：把对话框内容写死到程序中避免交互<sup><a href="#cite-12">[12]</a></sup>。</p>
+
+      <h4>Q5：本地路径在云端报错 / Excel 操作失败？</h4>
+      <p>云端无本地 <code>C:\Users\xxx\</code> 路径；云端默认不装 Excel。解决：改用相对路径或"获取临时文件夹路径"指令；Excel 操作改用 CSV 导出或 Python 的 openpyxl<sup><a href="#cite-3">[3]</a></sup>。</p>
+
+      <h4>Q6：免费版能否打包 EXE 给别人用 / 商用？</h4>
+      <p>社区版/免费版<strong>不能打包 EXE、无授权体系、不可商用交付</strong>，仅供个人学习。需打包交付或商用须选创业版/企业版<sup><a href="#cite-15">[15]</a></sup>。</p>
+
+      <h4>Q7：在 Python 块里引用全局变量报错？</h4>
+      <p>必须用 <code>package.variables['变量名']</code> 格式引用，直接用变量名会报错。主流程参数值超过 4000 字节会丢失，别把大段 JSON 塞默认值<sup><a href="#cite-3">[3]</a></sup>。</p>
+    </section>
+
+    <section id="pitfalls">
+      <h2>踩坑速查表</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>报错/现象</th><th>原因</th><th>解决方法</th></tr></thead>
+          <tbody>
+            <tr><td>机器人离线</td><td>网络断开或电脑休眠</td><td>电脑不关机不休眠，保持网络连接</td></tr>
+            <tr><td>应用发布失败</td><td>流程语法错误或依赖缺失</td><td>本地完整跑一遍确认不报错再发布</td></tr>
+            <tr><td>控制台参数按钮置灰</td><td>主流程参数超 4000 字节</td><td>缩减参数值，复杂数据放文件传递</td></tr>
+            <tr><td>文件上传失败</td><td>类型不支持/文件名超长/超 10M</td><td>仅支持 txt/csv/xlsx，调整大小</td></tr>
+            <tr><td>contains 匹配到多个元素</td><td>模糊匹配范围过大</td><td>加位置限制 <code>[1]</code> 取第一个</td></tr>
+            <tr><td>ends-with 不生效</td><td>Chrome 的 XPath 1.0 不支持</td><td>用 contains 代替</td></tr>
+            <tr><td>元素捕获一直是全屏</td><td>客户端捕获偏移</td><td>重启影刀客户端通常可解决</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源综合：影刀官方调试文档、云端部署实战、元素定位指南、社区版踩坑实录<sup><a href="#cite-3">[3]</a></sup><sup><a href="#cite-9">[9]</a></sup><sup><a href="#cite-16">[16]</a></sup>。</p>
+    </section>
+
+    <nav class="page-pager" aria-label="上一篇与下一篇导航">
+      <a href="index.html" class="pager-prev"><span class="pg-label">← 上一篇</span><span class="pg-title">首页总览</span></a>
+      <a href="cases.html" class="pager-next"><span class="pg-label">下一篇 →</span><span class="pg-title">实战案例</span></a>
+    </nav>
+  </main>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部">↑</button>
+
+<footer>
+  <div class="container">
+    <div class="sources">
+      <h2>参考来源</h2>
+      <ol>
+        <li id="cite-1"><span class="src-title">影刀RPA完全指南：从零入门到自动化高手, 安装注册与界面说明。</span><a href="https://blog.csdn.net/beautifulmemory/article/details/154302738" target="_blank" rel="noopener">https://blog.csdn.net/beautifulmemory/article/details/154302738</a></li>
+        <li id="cite-2"><span class="src-title">办公自动化不求人，关键还免费：影刀RPA安装与实战教程。</span><a href="http://m.toutiao.com/group/7658863018880549403/" target="_blank" rel="noopener">http://m.toutiao.com/group/7658863018880549403/</a></li>
+        <li id="cite-3"><span class="src-title">影刀RPA新手教程：云端部署实战, 本地机器人、云端调度、Python全局变量。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/167035374" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/167035374</a></li>
+        <li id="cite-4"><span class="src-title">影刀RPA界面功能块介绍, 综合管理界面与开发界面五大功能区。</span><a href="https://www.songshuhezi.com/shardblade/basic_interface_function_block.html" target="_blank" rel="noopener">https://www.songshuhezi.com/shardblade/basic_interface_function_block.html</a></li>
+        <li id="cite-5"><span class="src-title">全局变量 - 影刀RPA官方文档, 全局变量作用域与 package.variables 引用。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/711630250602528768" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/711630250602528768</a></li>
+        <li id="cite-6"><span class="src-title">影刀RPA | 应用搭建的一般流程和基本概念, 应用/指令/变量/元素。</span><a href="http://3g.163.com/dy/article/GGI4JA7J0514VN15.html" target="_blank" rel="noopener">http://3g.163.com/dy/article/GGI4JA7J0514VN15.html</a></li>
+        <li id="cite-7"><span class="src-title">RPA影刀 | 变量的使用, 变量类型与取值方式。</span><a href="https://blog.csdn.net/sinat_29950703/article/details/139388910" target="_blank" rel="noopener">https://blog.csdn.net/sinat_29950703/article/details/139388910</a></li>
+        <li id="cite-8"><span class="src-title">影刀RPA新手教程：元素定位完全指南, 三种定位方式与捕获原理。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/167083636" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/167083636</a></li>
+        <li id="cite-9"><span class="src-title">如何调试影刀应用 - 影刀RPA官方文档, 断点、单步、变量面板。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/710409639833317376" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/710409639833317376</a></li>
+        <li id="cite-10"><span class="src-title">如何查看影刀的运行日志 - 影刀RPA官方文档, 日志文件路径。</span><a href="https://www.yingdao.com/yddoc/rpa/710845098585698304" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/710845098585698304</a></li>
+        <li id="cite-11"><span class="src-title">应用分享与触发执行 - 影刀RPA官方文档, 触发器仅支持已发版应用。</span><a href="https://www.yingdao.com/yddoc/language/zh-cn/快速入门/08 应用分享与定时执行.html" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/.../应用分享与定时执行</a></li>
+        <li id="cite-12"><span class="src-title">影刀RPA+时间触发器, 定时触发器配置与卡住问题。</span><a href="http://m.blog.itpub.net/70043018/viewspace-3060834/" target="_blank" rel="noopener">http://m.blog.itpub.net/70043018/viewspace-3060834/</a></li>
+        <li id="cite-13"><span class="src-title">影刀RPA老是抓不到元素？别慌，这份"寻元"指南请收好。</span><a href="https://blog.csdn.net/rpa_gogogo/article/details/157503413" target="_blank" rel="noopener">https://blog.csdn.net/rpa_gogogo/article/details/157503413</a></li>
+        <li id="cite-14"><span class="src-title">影刀RPA | 4个常见元素进阶问题, 循环中元素失效。</span><a href="https://m.sohu.com/a/515916845_120649602/" target="_blank" rel="noopener">https://m.sohu.com/a/515916845_120649602/</a></li>
+        <li id="cite-15"><span class="src-title">影刀免费版不能打包? 免费版与付费版授权差异。</span><a href="http://m.toutiao.com/group/7654105055423775272/" target="_blank" rel="noopener">http://m.toutiao.com/group/7654105055423775272/</a></li>
+        <li id="cite-16"><span class="src-title">影刀RPA社区版够用吗？小公司用了一年，说说真实踩坑经历。</span><a href="http://m.toutiao.com/group/7637206768280322594/" target="_blank" rel="noopener">http://m.toutiao.com/group/7637206768280322594/</a></li>
+      </ol>
+    </div>
+  </div>
+  <div class="copy">© 2026 影刀RPA 使用教程知识库 · 内容整理自公开权威资料，仅供学习参考，版权归原作者所有</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
+<script src="assets/search-index.js?v=20261010a" defer></script>
+<script src="assets/charts.js?v=20261010a" defer></script>
+<script src="assets/app.js?v=20261010a" defer></script>
+</body>
+</html>

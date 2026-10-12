@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影刀操作SAP | 影刀RPA 教程</title>
+  <meta name="description" content="影刀RPA 操作SAP：SAP GUI Scripting启用、元素拾取策略、登录/事务码/ALV表格/录制回放、采购订单ME21N批量创建实战、财务CO/FI模块7大案例（凭证/对账/资产/银行/成本中心/内部订单/报工）、常用事务码速查表、常见报错与踩坑。">
+  <meta name="keywords" content="影刀SAP,影刀RPA SAP,SAP GUI Scripting,ME21N,采购订单自动化,SAP自动化,SAP CO,SAP FI,FB01,FBL1N,AS01,FF67,KS01,KO01,CO11N,财务自动化">
+  <meta property="og:title" content="影刀RPA 操作SAP">
+  <meta property="og:description" content="SAP GUI Scripting启用、元素拾取策略、采购订单批量创建、财务CO/FI模块7大案例">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="assets/styles.css?v=20261010a">
+</head>
+<body>
+
+<div class="sidebar-overlay" onclick="setSidebar(false)"></div>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <button class="topnav-toggle" aria-label="打开导航菜单" onclick="setTopNav(true)">☰</button>
+    <a class="brand" href="index.html"><span class="logo-dot"></span>影刀RPA 教程</a>
+    <nav class="topnav-links" aria-label="专栏导航">
+      <a href="index.html">首页</a>
+      <a href="basics.html">基础使用</a>
+      <a href="cases.html">实战案例</a>
+      <a href="ai.html">结合AI</a>
+      <a href="sap.html" class="active">操作SAP</a>
+    </nav>
+    <div class="topnav-search">
+      <input type="text" id="globalSearch" placeholder="搜索关键词..." autocomplete="off" aria-label="站内搜索">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+</nav>
+
+<div class="docs-shell">
+  <aside class="docs-sidebar" id="docsSidebar">
+    <nav class="sb-accordion" id="sbAccordion" aria-label="本页目录"></nav>
+  </aside>
+
+  <main class="docs-main">
+    <div class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>影刀操作SAP</span></div>
+    <h1 class="page-title">影刀 RPA 操作 SAP</h1>
+    <p class="page-subtitle">不用学 ABAP 也能操控 ERP · SAP GUI Scripting 启用、元素拾取策略、采购订单批量创建与财务 CO/FI 模块 7 大实战案例</p>
+    <div class="page-meta">
+      <span class="meta-tag accent">企业级场景</span>
+      <span class="meta-tag">4 大难点</span>
+      <span class="meta-tag">含拾取策略对比</span>
+      <span class="meta-tag">8 个实战案例</span>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat"><div class="num">4</div><div class="lbl">自动化难点</div></div>
+      <div class="stat"><div class="num">4</div><div class="lbl">拾取策略</div></div>
+      <div class="stat"><div class="num">8</div><div class="lbl">实战案例</div></div>
+      <div class="stat"><div class="num">35+</div><div class="lbl">常用事务码</div></div>
+    </div>
+
+    <section id="overview">
+      <h2>SAP 自动化概述</h2>
+      <h3>SAP GUI 自动化的四大难点</h3>
+      <p>SAP GUI 是基于 SAP 专有协议的客户端，和普通 Windows 程序不同，自动化面临四大核心挑战<sup><a href="#cite-1">[1]</a></sup>：</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>难点</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td><strong>元素ID不固定</strong></td><td>SAP GUI的控件ID会根据屏幕布局变化。同样的"物料编号"输入框，不同事务码下ID不一样，今天能用的定位明天可能失效</td></tr>
+            <tr><td><strong>脚本功能默认关闭</strong></td><td>SAP默认不允许第三方脚本操控GUI，未开启时影刀识别不到SAP界面元素</td></tr>
+            <tr><td><strong>系统响应延迟</strong></td><td>SAP事务处理会有0.5-3秒延迟，查询、过账都会有等待，不加等待就会点击失败</td></tr>
+            <tr><td><strong>特殊控件无法直接操作</strong></td><td>SAP的Grid View（ALV报表）、树形控件、导航栏不是标准Windows控件，普通点击无效</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>此外，SAP GUI 安装后默认并不允许外部脚本控制界面，很多脚本"连不上"的根因在于 SAP GUI 设置里把脚本功能关了<sup><a href="#cite-2">[2]</a></sup>。</p>
+
+      <h3>为什么需要 RPA</h3>
+      <p>OA 和 SAP 几乎是所有企业都会使用的信息管理系统。虽然这些系统给企业信息化带来了便利，但<strong>依赖人工操作、效率提升难</strong>这一痛点仍困扰大多数企业。RPA 通过模拟人工在计算机上的操作，将规则性强、重复性高的业务实现自动化<sup><a href="#cite-3">[3]</a></sup>。</p>
+      <div class="callout"><p><strong>核心价值：</strong>非侵入性部署（RPA 能把对现有系统的影响降到最小，与 OA、SAP 无缝连接，无需开发接口、不用懂 ABAP）；7×24 小时精准执行；流程标准化。有客户通过影刀 RPA 将月度财务关账流程从 3 天缩短到 4 小时<sup><a href="#cite-4">[4]</a></sup>。</p></div>
+    </section>
+
+    <section id="scenarios">
+      <h2>常见自动化场景</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>场景</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>财务凭证录入</td><td>月底结账，几十上百张凭证要一张张核对、过账</td></tr>
+            <tr><td>采购订单创建</td><td>在 ME21N 中批量创建采购订单</td></tr>
+            <tr><td>销售订单条目录入</td><td>通过OCR自动读取销售订单信息，在SAP中输入并预订</td></tr>
+            <tr><td>报表导出</td><td>从SAP导出ALV报表为Excel，定期发送给领导</td></tr>
+            <tr><td>物料主数据维护</td><td>MM03等事务码的查询与维护</td></tr>
+            <tr><td>银行流水导入</td><td>财务自动化机器人的核心场景</td></tr>
+            <tr><td>应收应付对账</td><td>跨系统数据比对</td></tr>
+            <tr><td>HR主数据录入</td><td>将招聘应用中的HR主数据输入SAP人力资本管理系统</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源：影刀RPA+OA/SAP<sup><a href="#cite-3">[3]</a></sup>；影刀RPA ERP系统操作：SAP基础操作自动化<sup><a href="#cite-5">[5]</a></sup>。</p>
+    </section>
+
+    <section id="prepare">
+      <h2>前提准备：SAP GUI Scripting 启用</h2>
+      <p>SAP GUI Scripting 的启用必须<strong>同时配置服务端和客户端</strong>，否则客户端拒绝对 UI 的访问。如果不能在服务端打开，就只能用图像识别方式<sup><a href="#cite-6">[6]</a></sup>。</p>
+
+      <h3>步骤一：服务端参数配置（事务码 RZ11）</h3>
+      <ol class="steps">
+        <li>启动 <code>saplogon.exe</code>，用账号密码登录 SAP 进入主页。</li>
+        <li>在命令框输入事务码 <strong><code>RZ11</code></strong>，按回车。</li>
+        <li>参数名称输入 <strong><code>sapgui/user_scripting</code></strong>，点击"显示"。</li>
+        <li>点击"更改值"，新值设置为 <strong><code>TRUE</code></strong>，保存更改<sup><a href="#cite-7">[7]</a></sup>。</li>
+        <li><strong>重复</strong>，将以下参数值改为 <strong><code>FALSE</code></strong>：
+          <ul>
+            <li><code>sapgui/user_scripting_disable_recording</code> → FALSE</li>
+            <li><code>sapgui/user_scripting_force_notification</code> → FALSE</li>
+            <li><code>sapgui/user_scripting_per_user</code> → FALSE</li>
+            <li><code>sapgui/user_scripting_set_readonly</code> → FALSE</li>
+          </ul>
+        </li>
+        <li><strong>注销后重新登录 SAP</strong>。</li>
+      </ol>
+      <div class="callout warning"><p><strong>重要：</strong>事务 RZ11 中对参数的所有更改均<strong>立即生效，但在系统重新启动时丢失</strong>。要使更改永久生效，需联系 SAP 系统管理员。若重启 SAP Service 之后要重新设置服务端脚本设置<sup><a href="#cite-7">[7]</a></sup><sup><a href="#cite-8">[8]</a></sup>。</p></div>
+
+      <h3>步骤二：客户端启用脚本</h3>
+      <ol class="steps">
+        <li>登录 SAP 后，点击菜单栏 <strong>"定制本地布局"</strong>（快捷键 <kbd>Alt + F12</kbd>），选择 <strong>"选项"</strong><sup><a href="#cite-8">[8]</a></sup>。</li>
+        <li>在弹出窗口点击 <strong>"辅助功能与脚本" → "脚本"</strong>。</li>
+        <li>勾选 <strong>"启用脚本(Enable Scripting)"</strong>。</li>
+        <li><strong>取消勾选</strong>以下两项（避免运行时弹通知干扰）：
+          <ul>
+            <li>"在脚本附加到SAP GUI时发出通知"</li>
+            <li>"在脚本打开连接时发出通知"</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3>步骤三：启用对话框模式（日期选择/帮助必用）</h3>
+      <ol class="steps">
+        <li>点击菜单 <strong>"帮助(H)" → "设置(N)"</strong>。</li>
+        <li>在"用户DDIC的人员设置"对话框，选 <strong>"F1帮助"</strong> 页签，选中 <strong>"以对话框模式"</strong>。</li>
+        <li>选 <strong>"F4帮助"</strong> 页签，在"显示"区域选中 <strong>"控制(amodal)"</strong><sup><a href="#cite-8">[8]</a></sup>。</li>
+      </ol>
+
+      <div class="callout"><p><strong>补充：</strong>录制/回放时需保证产品与 SAP 客户端以同样权限执行；RDP/Citrix 环境需以管理员权限启动 SAP；配置完成后需<strong>重启 SAP 才可生效</strong>；SAP GUI 7.4+ 客户端支持自动化。</p></div>
+
+      <h3>影刀侧准备</h3>
+      <ol>
+        <li>打开影刀RPA 设计器，新建自动化应用。</li>
+        <li>左侧指令面板搜索"SAP"，找到 <strong>"登录SAP"</strong> 核心指令<sup><a href="#cite-4">[4]</a></sup><sup><a href="#cite-9">[9]</a></sup>。</li>
+        <li>配置连接参数：<strong>连接名</strong>自定义（如 <code>MySAP_PRD</code>）；<strong>SAP窗口标题</strong>手动打开 SAP 登录窗口复制完整标题粘贴。</li>
+        <li>安装时勾选"影刀浏览器"和"图像识别组件"（图像识别兜底所需）<sup><a href="#cite-10">[10]</a></sup>。</li>
+        <li>Windows 11 需关闭"屏幕截图工具"后台权限，否则影刀截屏识别时会被系统拦截<sup><a href="#cite-10">[10]</a></sup>。</li>
+      </ol>
+    </section>
+
+    <section id="capture">
+      <h2>元素拾取策略</h2>
+      <p>影刀在桌面场景下的元素定位"四合一"为：<strong>UIA元素、MSAA元素、坐标、图像识别</strong>。能捕获到控件名就用元素捕获，捕获不到再切图像<sup><a href="#cite-10">[10]</a></sup>。针对 SAP，有三种核心捕获方法：</p>
+
+      <h3>方法一：标准桌面捕获（SAP GUI Scripting 方式）</h3>
+      <p>启动影刀元素捕获，悬停在 SAP 界面输入框上，大多数标准 SAP 输入框可正常捕获：</p>
+      <ul>
+        <li>类型通常是 <code>GuiTextField</code> 或 <code>GuiCTextField</code></li>
+        <li>属性里有 <code>Name</code>，就是输入框字段名（如 <code>MATNR</code> 表示物料号）</li>
+      </ul>
+      <p>捕获到元素后，"输入文本"指令可直接用。这是<strong>首选方案</strong>，前提是已开启 SAP GUI Scripting<sup><a href="#cite-1">[1]</a></sup>。</p>
+
+      <h3>方法二：图像识别定位（处理特殊控件）</h3>
+      <p>当标准捕获失败时，用图像识别作为备用定位，再配合"坐标偏移"：先用文字识别找到标签文字，再计算标签右侧固定偏移位置找到输入框。</p>
+
+      <h3>方法三：SAP GUI 脚本录制（最稳定）</h3>
+      <p>SAP 内置脚本录制功能，录制完成后得到 VBScript，里面有每个操作的精确控件路径，可在影刀 Python 中通过 COM 接口调用。<strong>这是最稳定的 SAP 操作方式，控件路径不受屏幕分辨率影响。</strong><sup><a href="#cite-1">[1]</a></sup></p>
+
+      <h3>拾取失败的应对</h3>
+      <p><strong>无法拾取 SAP 元素时</strong>，根因通常是 SAP GUI Scripting 未开启/权限隔离<sup><a href="#cite-11">[11]</a></sup>：</p>
+      <ul>
+        <li>检查服务端 <code>sapgui/user_scripting</code> 是否为 TRUE</li>
+        <li>检查客户端是否勾选"启用脚本"</li>
+        <li>如果选项是灰色的，说明被 SAP 管理员禁用了，需要找 IT 开通</li>
+      </ul>
+    </section>
+
+    <section id="strategies">
+      <h2>元素拾取策略对比</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>对比维度</th><th>SAP GUI Scripting</th><th>图像识别</th><th>坐标定位</th><th>快捷键/T-Code</th></tr></thead>
+          <tbody>
+            <tr><td>原理</td><td>通过SAP脚本API(COM接口)直接操作控件对象</td><td>截图匹配图像/文字，计算目标位置</td><td>按屏幕绝对像素坐标点击</td><td>模拟键盘输入快捷键或事务码</td></tr>
+            <tr><td>前提条件</td><td>服务端+客户端均开启脚本功能</td><td>影刀安装图像识别组件</td><td>无特殊要求</td><td>SAP窗口处于激活状态</td></tr>
+            <tr><td>稳定性</td><td>⭐⭐⭐⭐⭐ 最稳定，不受分辨率影响</td><td>⭐⭐⭐ 受分辨率/界面缩放影响</td><td>⭐⭐ 位置漂移即失效</td><td>⭐⭐⭐⭐ 稳定</td></tr>
+            <tr><td>可迁移性</td><td>高，控件路径固定</td><td>中，换显示器可能需重做锚点</td><td>低，仅限当前环境</td><td>高，T-Code通用</td></tr>
+            <tr><td>适用控件</td><td>标准SAP控件（GuiTextField等）</td><td>特殊控件、非标准Windows控件</td><td>位置固定的按钮</td><td>命令框、功能键、菜单跳转</td></tr>
+            <tr><td>操作精度</td><td>精确到字段名</td><td>依赖confidence阈值(建议0.8)</td><td>像素级</td><td>精确</td></tr>
+            <tr><td>开发难度</td><td>中（需了解控件路径/COM）</td><td>低-中（需调参/做锚点）</td><td>低</td><td>低</td></tr>
+            <tr><td>代表指令</td><td>影刀SAP指令组 / Python win32com</td><td>win32.image.click()</td><td>【鼠标点击】绝对坐标</td><td>【键盘输入】/命令框填T-Code</td></tr>
+            <tr><td>推荐优先级</td><td><strong>1（首选）</strong></td><td>2（降级/兜底）</td><td>4（最后兜底）</td><td>3（导航跳转首选）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="chart-box" id="sapStrategyChart" data-chart="sapStrategyChartFn"></div>
+    </section>
+
+    <section id="ops">
+      <h2>常用操作详解</h2>
+      <h3>SAP 登录自动化</h3>
+      <p>影刀操作步骤<sup><a href="#cite-5">[5]</a></sup>：</p>
+      <ol class="steps">
+        <li>新建流程「SAP自动化」。</li>
+        <li>添加 <strong>【打开应用程序】</strong> 指令 → 路径：SAP GUI 快捷方式。</li>
+        <li>添加 <strong>【窗口激活】</strong> 指令 → 窗口标题：SAP。</li>
+        <li>添加 <strong>【点击】</strong> 指令 → 定位值：连接按钮。</li>
+        <li>添加 <strong>【填写】</strong> 指令 → 定位值：用户名输入框 → 填入：变量 <code>sap_username</code>。</li>
+        <li>添加 <strong>【填写】</strong> 指令 → 定位值：密码输入框 → 填入：变量 <code>sap_password</code>。</li>
+        <li>添加 <strong>【点击】</strong> 指令 → 定位值：登录按钮。</li>
+      </ol>
+      <p>另一种方式是通过 Python COM 接口直接连接（无需手动登录，已有 SAP 会话时）：</p>
+      <pre><code>SapGuiAuto = win32com.client.GetObject("SAPGUI")
+application = SapGuiAuto.GetScriptingEngine
+connection = application.Children(0)
+session = connection.Children(0)</code></pre>
+      <p class="callout-mini">来源：影刀RPA SAP系统自动化入门<sup><a href="#cite-1">[1]</a></sup>。</p>
+
+      <h3>执行事务码（T-Code）</h3>
+      <p><strong>影刀可视化指令方式</strong><sup><a href="#cite-5">[5]</a></sup>：</p>
+      <ol class="steps">
+        <li>添加 <strong>【点击】</strong> 指令 → 定位值：命令框（okcd）。</li>
+        <li>添加 <strong>【填写】</strong> 指令 → 定位值：命令框 → 填入：<code>VA01</code>（创建销售订单）。</li>
+        <li>添加 <strong>【键盘输入】</strong> 指令 → 按键：Enter。</li>
+      </ol>
+      <p><strong>Python COM 方式</strong>（最稳定）：</p>
+      <pre><code>session.findById("wnd[0]/tbar[0]/okcd").text = "/nME21N"
+session.findById("wnd[0]").sendVKey(0)  # 发送回车</code></pre>
+      <div class="callout"><p>用 <code>/n</code> 前缀表示跳转到新事务码（中断当前事务），不加 <code>/n</code> 则在当前事务内执行<sup><a href="#cite-1">[1]</a></sup><sup><a href="#cite-12">[12]</a></sup>。<strong>T-Code 的价值：</strong>SAP 界面跳转的捷径，不需点击科目，直接在搜索框输入 T-Code 按回车跳转，比图像判断+点击方便且稳定。</p></div>
+
+      <h3>表格 / ALV 操作</h3>
+      <p>ALV Grid 控件路径格式为 <code>tbl表名/字段名[列索引,行索引]</code>，逐行处理时循环行索引即可<sup><a href="#cite-1">[1]</a></sup>：</p>
+      <pre><code># 表格中控件路径，[列,行]定位单元格
+session.findById("wnd[0]/.../tblSAPLMEPOTC_1111/ctxtMEPO1111-MATNR[1,0]").text = material</code></pre>
+      <p><strong>修改 SAP 表格内容</strong>：影刀社区指出目前有"读取SAP表格"指令，但没有直接的"修改SAP表格"标准指令。解决方案是 SAP 自动化配置好后，用桌面软件自动化指令（如"设置元素值(win)"指令）来操作<sup><a href="#cite-13">[13]</a></sup>。</p>
+
+      <h3>录制回放：SAP 原生 vs 影刀录制</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>SAP原生录制</th><th>影刀录制</th></tr></thead>
+          <tbody>
+            <tr><td>录制方式</td><td>SAP GUI内置：工具→脚本录制与回放→开始录制，生成VBScript</td><td>影刀设计器录制操作步骤，生成可视化流程</td></tr>
+            <tr><td>输出格式</td><td>VBScript代码（含精确控件路径）</td><td>影刀可视化指令流</td></tr>
+            <tr><td>稳定性</td><td>控件路径不受屏幕分辨率影响，最稳定</td><td>依赖元素特征定位，可能因界面变化失效</td></tr>
+            <tr><td>使用门槛</td><td>需一定VBA知识</td><td>低代码，业务人员可上手</td></tr>
+            <tr><td>推荐用法</td><td>先用SAP录制获取精确控件路径，再在影刀Python中通过COM调用</td><td>直接可视化搭建流程，配合元素库提升稳定性</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">实战技巧：先手工操作一遍，用 SAP 自带的脚本录制功能生成 VBScript，然后参考转换成影刀指令<sup><a href="#cite-5">[5]</a></sup>。</p>
+    </section>
+
+    <section id="case-po">
+      <h2>实战案例：采购订单 ME21N 批量创建</h2>
+      <p><strong>场景</strong>：每天有 100 条采购需求，要在 SAP <strong>ME21N</strong> 事务码中批量创建采购订单<sup><a href="#cite-9">[9]</a></sup><sup><a href="#cite-1">[1]</a></sup>。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A["① 读取Excel采购需求数据<br/>供应商/物料/数量/交货日/工厂"] --> B["② 启动SAP并连接会话<br/>win32com.GetObject('SAPGUI')"]
+    B --> C["③ 打开事务码ME21N"]
+    C --> D["④ 循环遍历Excel每行"]
+    D --> E["4.1 填写供应商LIFNR"]
+    E --> F["4.2 填写行项目<br/>物料/数量/交货日/工厂"]
+    F --> G["4.3 点击保存btn[11]"]
+    G --> H["4.4 从状态栏提取订单号"]
+    H --> I["4.5 订单号写回Excel"]
+    I --> J["4.6 异常处理记录失败"]
+    J --> K{还有下一行?}
+    K -->|是| D
+    K -->|否| L["⑤ 保存处理结果Excel"]
+        </pre>
+        <figcaption>图1：采购订单ME21N批量创建流程</figcaption>
+      </figure>
+
+      <h3>关键操作要点</h3>
+      <ol class="steps">
+        <li><strong>打开事务码</strong>：<code>session.findById("wnd[0]/tbar[0]/okcd").text = "/nME21N"</code>，发送回车。</li>
+        <li><strong>填写供应商</strong>：控件路径 <code>wnd[0]/usr/subSUB0:SAPMM06E:0101/.../ctxtEKKO-LIFNR</code>。</li>
+        <li><strong>填写行项目</strong>：ALV 表格控件路径含 <code>[列索引,行索引]</code>，如 <code>ctxtMEPO1111-MATNR[1,0]</code> 为第1列第0行的物料号。</li>
+        <li><strong>保存</strong>：点击 <code>wnd[0]/tbar[0]/btn[11]</code>（保存按钮）。</li>
+        <li><strong>获取订单号</strong>：从状态栏 <code>wnd[0]/sbar</code> 提取文本，用正则匹配订单号（如"采购订单 4500001234 已保存"中提取数字）。</li>
+        <li><strong>错误处理</strong>：try-except 捕获异常，失败原因写回 Excel。</li>
+      </ol>
+
+      <h3>销售订单批量创建（VA01）</h3>
+      <p>销售订单创建流程类似，事务码为 <strong>VA01</strong><sup><a href="#cite-5">[5]</a></sup>：</p>
+      <ol class="steps">
+        <li>执行事务码 <code>VA01</code>。</li>
+        <li>填写订单类型 <code>OR</code>（标准订单）→ 回车。</li>
+        <li>填写销售组织 <code>1000</code>、分销渠道 <code>10</code>、产品组 <code>00</code> → 回车。</li>
+        <li>用【Excel读取】指令读取订单数据 → 【循环】遍历。</li>
+        <li>循环内：填写物料号、数量、单价，Tab键跳转字段，点击添加新行。</li>
+        <li>点击保存按钮 → 等待2秒 → 获取状态栏订单号 → 写入日志。</li>
+      </ol>
+    </section>
+
+    <section id="fico-cases">
+      <h2>财务场景实战：CO/FI 模块 7 大案例</h2>
+      <p>以下案例覆盖 SAP 财务会计（FI：总账/应收/应付/资产/银行）与管理会计（CO：成本中心/内部订单/生产订单）两大模块的成熟自动化场景，每个含步骤序列流程图、关键 T-Code 与控件路径、踩坑提示。所有案例共用前置配置：服务端 <code>RZ11</code> 开启 <code>sapgui/user_scripting=TRUE</code>，客户端启用脚本并设为模态对话框，屏幕缩放必须 100%<sup><a href="#cite-14">[14]</a></sup>。</p>
+
+      <div class="callout success">
+        <p><strong>影刀SAP专属指令</strong>：获取窗口对象(sap)、点击工具栏按钮(sap)（按钮名如"过账(Pst)/保存(Save)/执行(Exec)"）、选中树节点(sap)（路径如"SAP菜单/会计核算/控制"）、导出表格(SAP)（在SAPGUIGridView元素右键→电子表格→保存）<sup><a href="#cite-14">[14]</a></sup><sup><a href="#cite-15">[15]</a></sup><sup><a href="#cite-16">[16]</a></sup><sup><a href="#cite-17">[17]</a></sup>。</p>
+      </div>
+
+      <h3>案例1：SAP 凭证批量录入与过账（FB01/FB50）<span class="meta-tag accent" style="font-size:.75em">FI-GL</span></h3>
+      <p><strong>场景</strong>：月度结账需将几十至上百张会计凭证（费用计提、费用分摊、调整凭证）逐张录入 SAP 并过账。人工单张耗时2-5分钟，月末集中处理极易疲劳出错<sup><a href="#cite-18">[18]</a></sup><sup><a href="#cite-19">[19]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取Excel凭证数据] --> B[登录SAP]
+    B --> C{事务码选择}
+    C -->|纯总账| D1[FB50 Enjoy界面]
+    C -->|含客户供应商| D2[FB01 标准界面]
+    D1 --> E[填写抬头:日期/类型/公司代码/货币]
+    D2 --> E
+    E --> F[循环行项目]
+    F --> F1[借方:科目/金额/成本中心]
+    F --> F2[贷方:科目/金额/成本中心]
+    F1 --> G[校验借贷平衡]
+    F2 --> G
+    G --> H[点击过账按钮]
+    H --> I[提取状态栏凭证号]
+    I --> J{是否还有凭证}
+    J -->|是| E
+    J -->|否| K[写回凭证号到Excel]
+    K --> L[输出执行日志]
+        </div>
+        <p class="diagram-caption">图：SAP凭证批量录入与过账流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FB01</code>：输入总账凭证（标准模式），支持多行凭证；<code>FB50</code>：Enjoy界面，仅总账科目；<code>F-02</code>：快速模式；<code>FB03</code>：显示凭证（回写校验用）<sup><a href="#cite-19">[19]</a></sup><sup><a href="#cite-20">[20]</a></sup>。</li>
+        <li>抬头字段：<code>凭证日期(BlngDate)</code>、<code>参照(Reference)</code>、<code>凭证类型(DocType)</code>、<code>公司代码(CompanyCode)</code>、<code>过账日期(PstngDate)</code>、<code>货币(Currency)</code>。</li>
+        <li>行项目：<code>科目(G/L Account)</code>、<code>D/C(借/贷)</code>、<code>金额(Amount)</code>、<code>成本中心(Cost Center)</code>、<code>利润中心(Profit Center)</code>、<code>文本(Text)</code>。</li>
+        <li>过账按钮：工具栏按钮名"过账(Pst)"<sup><a href="#cite-16">[16]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>posting key 概念</strong>：FB50 仅总账科目；含客户/供应商须 FB01 配 posting key（01=借客户、50=贷总账），否则无法过账<sup><a href="#cite-20">[20]</a></sup>。</p>
+        <p>⚠️ <strong>借贷不平衡</strong>直接报错阻断：影刀先用计算指令对 Excel 每张凭证求和校验借贷相等，不平衡的行标红跳过。</p>
+        <p>⚠️ <strong>凭证号提取</strong>：过账成功后状态栏显示"凭证 ×××× 已过账"，用"获取SAP状态栏文本"提取，注意多语言文案差异。</p>
+        <p>⚠️ <strong>会计期间未开</strong>：OB52 未开放当月期间会过账失败，流程前确认期间已开或加前置检查。</p>
+        <p>⚠️ <strong>Scripting Tracker 录制法</strong>：社区推荐先用 Scripting Tracker 录制一遍 SAP 操作生成 Python 代码，复制到影刀调整参数<sup><a href="#cite-18">[18]</a></sup>。</p>
+      </div>
+
+      <h3>案例2：SAP 应收/应付对账自动化（FBL1N/FBL5N）<span class="meta-tag accent" style="font-size:.75em">FI-AP/AR</span></h3>
+      <p><strong>场景</strong>：定期导出 AP/AR 明细，与银行流水或内部系统对账。汽车零部件企业案例：对账时间从4小时缩短至15分钟，准确率100%<sup><a href="#cite-21">[21]</a></sup><sup><a href="#cite-22">[22]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[输入筛选:供应商范围/公司代码/日期] --> B{对账类型}
+    B -->|应付AP| C1[执行FBL1N 供应商行项目]
+    B -->|应收AR| C2[执行FBL5N 客户行项目]
+    C1 --> D[ALV报表生成]
+    C2 --> D
+    D --> E[导出表格SAP指令:右键电子表格存Excel]
+    E --> F[读取AP/AR明细]
+    F --> G[登录网银下载流水Excel]
+    G --> H[按结算单号/金额/日期匹配]
+    H --> I[标记差异:多付/少付/未核销]
+    I --> J[生成对账报告+余额调节表]
+        </div>
+        <p class="diagram-caption">图：应收/应付对账自动化流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FBL1N</code>：供应商行项目显示；<code>FBL5N</code>：客户行项目显示；<code>FK10N</code>/<code>FD10N</code>：供应商/客户余额概览<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li>ALV 网格控件名形如 <code>SAPGUIGridViewCtrl1</code>，用影刀【导出表格(SAP)】指令：右键→电子表格→指定 <code>save_path</code><sup><a href="#cite-17">[17]</a></sup>。</li>
+        <li>筛选界面：<code>供应商/客户范围(Account)</code>、<code>公司代码</code>、<code>未清项/已清项/全部</code>、<code>过账日期</code>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>ALV导出弹窗</strong>：导出时 SAP 可能弹出格式/路径选择窗口，需提前捕获弹窗元素自动确认，否则卡住<sup><a href="#cite-24">[24]</a></sup>。</p>
+        <p>⚠️ <strong>大数据量分页</strong>：上千行时 SAP 默认分批加载，导出前需确保完整加载（设显示行数上限或循环翻页）。</p>
+        <p>⚠️ <strong>结算单号格式不一致</strong>：OA与SAP单号可能有前导零/分隔符差异，匹配前需在影刀做格式标准化<sup><a href="#cite-25">[25]</a></sup>。</p>
+        <p>⚠️ <strong>未清/已清项混淆</strong>：对账须明确筛"未清项"还是"已清项"，勾错导致余额对不上。</p>
+      </div>
+
+      <h3>案例3：SAP 资产购置与折旧自动化（AS01/AFAB）<span class="meta-tag accent" style="font-size:.75em">FI-AA</span></h3>
+      <p><strong>场景</strong>：年度初批量创建固定资产主数据，月末执行折旧运行（AFAB）生成折旧凭证<sup><a href="#cite-26">[26]</a></sup><sup><a href="#cite-27">[27]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取资产清单Excel] --> B[登录SAP]
+    B --> C[循环每条资产]
+    C --> D[执行AS01]
+    D --> E[输入资产分类+公司代码]
+    E --> F[回车进主数据明细]
+    F --> G[General标签:填资产描述]
+    G --> H[Time Dependent标签:填成本中心]
+    H --> I[填写购置值/折旧码/年限]
+    I --> J[保存提取资产主编号]
+    J --> K[写回Excel]
+    K --> L{是否还有资产}
+    L -->|是| D
+    L -->|否| M[月末执行AFAB折旧运行]
+    M --> N[输入公司代码+会计期间]
+    N --> O[测试运行→正式运行]
+    O --> P[检查运行日志/折旧凭证过账]
+    P --> Q[导出折旧报表]
+        </div>
+        <p class="diagram-caption">图：资产购置与折旧自动化流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>AS01</code>：创建资产（<code>资产分类</code>+<code>公司代码</code>→General标签填<code>描述</code>，Time Dependent标签填<code>成本中心</code>）；<code>AS02</code>修改；<code>AS03</code>显示<sup><a href="#cite-26">[26]</a></sup>。</li>
+        <li><code>AFAB</code>：折旧运行（输入公司代码+期间）；<code>AW01N</code>：资产浏览器；<code>ABAVN</code>：资产报废；<code>AJRW</code>：年终结转<sup><a href="#cite-23">[23]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>资产分类选错</strong>：分类（土地不折旧/IT设备3年/建筑20年）决定折旧规则，Excel 中先校验分类与折旧码匹配。</p>
+        <p>⚠️ <strong>成本中心必填</strong>：Time Dependent标签成本中心为空时折旧无法记入正确成本对象，AFAB 可能报错。</p>
+        <p>⚠️ <strong>AFAB 测试运行优先</strong>：务必先"测试运行(Test Run)"检查无报错再正式运行，避免错误折旧凭证。</p>
+        <p>⚠️ <strong>资产主编号回写</strong>：AS01 保存后返回主资产号，需抓取状态栏提取，后续查询依赖此号。</p>
+      </div>
+
+      <h3>案例4：SAP 银行对账单导入与清账（FF67）<span class="meta-tag accent" style="font-size:.75em">FI-BL</span></h3>
+      <p><strong>场景</strong>：将银行流水导入 SAP 并自动清账。某集团每月8200+条流水对账，影刀让8个财务人员高效处理<sup><a href="#cite-22">[22]</a></sup><sup><a href="#cite-28">[28]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[影刀登录网银下载流水Excel] --> B[读取银行流水]
+    B --> C[登录SAP执行FF67]
+    C --> D[填抬头:公司代码/开户行/账户ID/对账单号/日期/期初期末余额]
+    D --> E[循环每条流水]
+    E --> F[输入业务交易码+金额+value date+摘要]
+    F --> G{是否还有流水}
+    G -->|是| E
+    G -->|否| H[保存对账单触发自动清账]
+    H --> I[处理未清项:F.13自动清账/F-44手动]
+    I --> J[导出清账报告:余额调节表]
+        </div>
+        <p class="diagram-caption">图：银行对账单导入与清账流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FF67</code>：手工银行对账单录入。抬头：<code>公司代码</code>、<code>开户行(HouseBank)</code>、<code>账户ID</code>、<code>对账单编号</code>、<code>对账单日期</code>、<code>期初/期末余额</code>、<code>过账日期</code>。</li>
+        <li>行项目：<code>业务交易码(EZK借/EZI贷)</code>、<code>金额</code>、<code>估价日(ValueDate)</code>、<code>分配</code>、<code>文本</code>。</li>
+        <li><code>F.13</code>：自动清账；<code>F-44</code>：供应商清账；<code>F-32</code>：客户清账<sup><a href="#cite-23">[23]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>业务交易码映射</strong>：流水业务类型须映射为 SAP 业务码（EZK=客户收款借方/EZI=供应商付款贷方），映射表错则清账方向错。</p>
+        <p>⚠️ <strong>期初期末余额不平</strong>：FF67 要求"期初+借方合计-贷方合计=期末"，影刀录入前用计算指令校验平衡。</p>
+        <p>⚠️ <strong>对账单编号唯一性</strong>：同开户行+账户ID的对账单编号不可重复，Excel 维护递增编号列。</p>
+        <p>⚠️ <strong>大额流水导入慢</strong>：上百行逐条录 FF67 慢，可考虑电子银行对账单(EBS)文件导入替代<sup><a href="#cite-28">[28]</a></sup>。</p>
+      </div>
+
+      <h3>案例5：SAP 成本中心主数据批量维护（KS01/KS02）<span class="meta-tag accent" style="font-size:.75em">CO-CCA</span></h3>
+      <p><strong>场景</strong>：年度初批量创建/修改成本中心（新建车间、调整组织架构、变更负责人）<sup><a href="#cite-23">[23]</a></sup><sup><a href="#cite-15">[15]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取成本中心Excel] --> B[登录SAP]
+    B --> C{新建或修改}
+    C -->|新建| D1[执行KS01]
+    C -->|修改| D2[执行KS02]
+    D1 --> E[输入成本中心编号+控制范围]
+    D2 --> E
+    E --> F[回车进主数据]
+    F --> G[基本标签:描述/负责人/类型]
+    G --> H[层次标签:标准层次位置]
+    H --> I[公司代码标签:关联公司代码]
+    I --> J[输入有效期]
+    J --> K[保存]
+    K --> L{是否还有记录}
+    L -->|是| D1
+    L -->|否| M[批量激活/解锁]
+    M --> N[导出KS13清单校验]
+        </div>
+        <p class="diagram-caption">图：成本中心主数据批量维护流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KS01</code>：创建（<code>成本中心编号</code>+<code>控制范围</code>→基本标签填<code>描述/负责人/类型/层次</code>）；<code>KS02</code>修改；<code>KS03</code>显示；<code>KS13</code>清单导出校验<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li><code>KSH1</code>：创建成本中心组；<code>KSV1</code>：创建实际分配循环。</li>
+        <li>树节点操作可用影刀【选中树节点(sap)】指令，路径如"SAP菜单/会计核算/控制"<sup><a href="#cite-15">[15]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>标准层次必填</strong>：每个成本中心须挂在标准层次节点下，层次路径错会导致孤立，报表查不到。</p>
+        <p>⚠️ <strong>控制范围一致性</strong>：批量导入的多个成本中心须属同一控制范围，跨范围需分批处理。</p>
+        <p>⚠️ <strong>有效期与锁定</strong>：有效期设在未来则当前无法记账；已过账的不能删除只能锁定，KS02 解锁需在有效期内。</p>
+        <p>⚠️ <strong>公司代码关联</strong>：成本中心须关联公司代码才能记成本凭证，漏关联则 KB1N 记账报错。</p>
+      </div>
+
+      <h3>案例6：SAP 内部订单批量创建与结算（KO01/KO8G）<span class="meta-tag accent" style="font-size:.75em">CO-IO</span></h3>
+      <p><strong>场景</strong>：项目型企业（研发/营销/技改）的内部订单创建与月末结算。月末用 KO8G 批量结算到目标成本中心/在建工程<sup><a href="#cite-29">[29]</a></sup><sup><a href="#cite-30">[30]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取订单Excel] --> B[登录SAP]
+    B --> C[循环每条订单]
+    C --> D[执行KO01]
+    D --> E[选择订单类型+公司代码]
+    E --> F[回车进主数据]
+    F --> G[基本标签:描述/负责人]
+    G --> H[结算规则标签:定义结算分配]
+    H --> I[预算标签:维护预算KO22]
+    I --> J[保存提取订单号写回Excel]
+    J --> K{是否还有订单}
+    K -->|是| D
+    K -->|否| L[月末执行KO8G批量结算]
+    L --> M[输入结算范围+期间]
+    M --> N[测试运行→检查日志]
+    N --> O[正式运行→生成结算凭证]
+    O --> P[导出结算报告KOB1/KO03]
+        </div>
+        <p class="diagram-caption">图：内部订单批量创建与结算流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KO01</code>：新建（订单类型：费用型/收入型）；<code>KO02</code>：修改（维护结算规则）；<code>KO03</code>：显示；<code>KOK3</code>：集中显示<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li><code>KO88</code>：单个结算；<code>KO8G</code>：批量结算（月末用）；<code>KOB1</code>：行项目显示；<code>KO22</code>：维护预算<sup><a href="#cite-29">[29]</a></sup>。</li>
+        <li>结算规则控件为表格控件（行：结算类别/接收者/百分比/源）。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>结算规则必须维护</strong>：KO01 建单后未配结算规则则 KO8G 跳过该订单，建议建单即配规则。</p>
+        <p>⚠️ <strong>KO88 vs KO8G</strong>：KO88 单个、KO8G 批量；首次用"全量"，后续月份用"Δ(差异)"，选错会重复结算。</p>
+        <p>⚠️ <strong>测试运行先行</strong>：KO8G 必须先"测试运行(Test Run)"检查无报错再正式运行。</p>
+        <p>⚠️ <strong>订单状态控制</strong>：订单须为"REL(已释放)"状态才能结算，建单后需 KO02 释放。</p>
+      </div>
+
+      <h3>案例7：SAP 生产订单工单确认与报工（CO11N/CO02）<span class="meta-tag accent" style="font-size:.75em">CO-PC</span></h3>
+      <p><strong>场景</strong>：制造企业每天对生产工单报工确认（完成数量、耗用工时），漏报/错报影响成本核算与在制品(WIP)<sup><a href="#cite-31">[31]</a></sup><sup><a href="#cite-32">[32]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取报工数据Excel] --> B[登录SAP]
+    B --> C[循环每条报工]
+    C --> D[执行CO11N]
+    D --> E[输入生产订单号回车]
+    E --> F[选择工序号]
+    F --> G[选择确认类型:部分/最终/自动最终]
+    G --> H[输入良品产量]
+    H --> I[输入废品数量+确认工时]
+    I --> J[填确认人员/日期]
+    J --> K[保存提取确认号]
+    K --> L[写回Excel]
+    L --> M{是否还有报工}
+    M -->|是| D
+    M -->|否| N[处理差异:CO02修改/CO13取消]
+    N --> O[导出报工报表COOIS/KOB1]
+        </div>
+        <p class="diagram-caption">图：生产订单工单确认与报工流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>CO11N</code>：报工（<code>订单号</code>+回车→<code>工序号</code>→<code>确认类型</code>→<code>产量/废品/工时</code>）；<code>CO11</code>旧界面；<code>CO15</code>：按订单整体确认<sup><a href="#cite-31">[31]</a></sup>。</li>
+        <li><code>CO02</code>：修改订单；<code>CO13</code>：取消报工确认；<code>COOIS</code>：生产订单信息系统（导出报表）；<code>KOB1</code>：订单成本<sup><a href="#cite-32">[32]</a></sup>。</li>
+        <li><code>CO88</code>：生产订单结算；<code>KKAO</code>：计算WIP；<code>KKS1</code>：计算差异。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>工序顺序报工</strong>：多工序必须按前后顺序依次报工，不得从后往前，否则后工序报工被拦截。影刀循环前按工序号升序排序 Excel。</p>
+        <p>⚠️ <strong>确认类型选择</strong>：部分确认(Partial)可多次累加；最终确认(Final)后不可再报；批量默认用部分确认，完工才用最终确认<sup><a href="#cite-31">[31]</a></sup>。</p>
+        <p>⚠️ <strong>良品+废品≤订单数量</strong>：超量 SAP 报错，Excel 预处理校验。</p>
+        <p>⚠️ <strong>报工自动收货</strong>：CO11N 可触发自动入库，若后台配了自动收货则报工后库存自动增加，影刀无需另做 MIGO<sup><a href="#cite-32">[32]</a></sup>。</p>
+        <p>⚠️ <strong>取消报工用 CO13</strong>：报工错误须 CO13 取消原确认再重报，不能直接 CO02 改数量。</p>
+      </div>
+
+      <h3>SAP CO/FI 常用事务码速查表</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>模块</th><th>事务码</th><th>描述</th><th>关键功能</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="6">FI-GL</td><td><code>FB01</code></td><td>输入总账凭证(标准)</td><td>多行凭证录入</td></tr>
+            <tr><td><code>FB50</code></td><td>输入总账凭证(Enjoy)</td><td>仅总账科目</td></tr>
+            <tr><td><code>FB03</code></td><td>显示凭证</td><td>查凭证详情/导出PDF</td></tr>
+            <tr><td><code>FBL3N</code></td><td>总账行项目显示</td><td>按科目/日期查询</td></tr>
+            <tr><td><code>FS10N</code></td><td>科目余额显示</td><td>查当前余额</td></tr>
+            <tr><td><code>OB52</code></td><td>维护会计期间</td><td>开/关期间</td></tr>
+            <tr><td rowspan="4">FI-AP</td><td><code>FK01</code></td><td>创建供应商</td><td>录入供应商信息</td></tr>
+            <tr><td><code>F-43</code></td><td>输入供应商发票</td><td>触发应付增加</td></tr>
+            <tr><td><code>FBL1N</code></td><td>供应商行项目显示</td><td>查应付明细/导出Excel</td></tr>
+            <tr><td><code>F-44</code></td><td>供应商清账</td><td>核销应付</td></tr>
+            <tr><td rowspan="4">FI-AR</td><td><code>FD01</code></td><td>创建客户</td><td>录入客户信息</td></tr>
+            <tr><td><code>F-28</code></td><td>客户收款过账</td><td>记录付款/核销应收</td></tr>
+            <tr><td><code>FBL5N</code></td><td>客户行项目显示</td><td>查应收明细/导出Excel</td></tr>
+            <tr><td><code>F-32</code></td><td>客户清账</td><td>核销应收</td></tr>
+            <tr><td rowspan="4">FI-AA</td><td><code>AS01</code></td><td>创建资产主数据</td><td>录入资产/类别/原值</td></tr>
+            <tr><td><code>AFAB</code></td><td>资产折旧运行</td><td>自动计算并过账折旧</td></tr>
+            <tr><td><code>AW01N</code></td><td>资产浏览器</td><td>查看资产详情</td></tr>
+            <tr><td><code>AJRW</code></td><td>资产年度结转</td><td>余额结转至下年</td></tr>
+            <tr><td rowspan="2">FI-BL</td><td><code>FF67</code></td><td>手工银行对账单录入</td><td>流水导入与清账</td></tr>
+            <tr><td><code>F.13</code></td><td>自动清账</td><td>自动核销未清项</td></tr>
+            <tr><td rowspan="4">CO-CCA</td><td><code>KS01</code></td><td>创建成本中心</td><td>定义成本中心</td></tr>
+            <tr><td><code>KS02</code></td><td>修改成本中心</td><td>调整名称/负责人</td></tr>
+            <tr><td><code>KS13</code></td><td>成本中心清单</td><td>列表导出校验</td></tr>
+            <tr><td><code>KSV1</code></td><td>创建分配循环</td><td>定义成本分配规则</td></tr>
+            <tr><td rowspan="5">CO-IO</td><td><code>KO01</code></td><td>新建内部订单</td><td>创建订单</td></tr>
+            <tr><td><code>KO02</code></td><td>修改内部订单</td><td>调整预算/结算规则</td></tr>
+            <tr><td><code>KO8G</code></td><td>批量结算</td><td>月末批量结算一组订单</td></tr>
+            <tr><td><code>KOB1</code></td><td>订单行项目显示</td><td>查费用/收入明细</td></tr>
+            <tr><td><code>KO22</code></td><td>维护订单预算</td><td>—</td></tr>
+            <tr><td rowspan="6">CO-PC</td><td><code>CO11N</code></td><td>生产订单报工</td><td>记录完成数量/工时</td></tr>
+            <tr><td><code>CO02</code></td><td>修改生产订单</td><td>改确认/改数量</td></tr>
+            <tr><td><code>CO13</code></td><td>取消报工确认</td><td>—</td></tr>
+            <tr><td><code>COOIS</code></td><td>生产订单信息系统</td><td>导出报工报表</td></tr>
+            <tr><td><code>KKAO</code></td><td>计算WIP</td><td>算在制品价值</td></tr>
+            <tr><td><code>KKS1</code></td><td>计算差异</td><td>对比实际与标准成本</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源：SAP FICO常用事务码分类汇总<sup><a href="#cite-23">[23]</a></sup>；FI模块常用T-CODE<sup><a href="#cite-33">[33]</a></sup>。</p>
+    </section>
+
+    <section id="errors">
+      <h2>常见报错与排查</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>报错/现象</th><th>原因</th><th>解决方案</th></tr></thead>
+          <tbody>
+            <tr><td>"某脚本正试图访问SAP GUI"弹窗</td><td>客户端未取消通知选项</td><td>选项→辅助功能与脚本→取消勾选两个"通知"选项</td></tr>
+            <tr><td>元素识别不到/拾取失败</td><td>SAP GUI Scripting未开启</td><td>服务端RZ11设 <code>sapgui/user_scripting=TRUE</code>，客户端勾选"启用脚本"</td></tr>
+            <tr><td>"The Enumerator of the collection cannot find an element with the specified index"</td><td>脚本失效/同时打开多个系统未都配置</td><td>确认所有打开的SAP系统均配置了脚本；<code>sapgui/user_scripting</code> 必须为true</td></tr>
+            <tr><td>脚本录制与回放功能灰色不可用</td><td>服务端参数未启用</td><td>通过RZ11将 <code>sapgui/user_scripting</code> 设为TRUE</td></tr>
+            <tr><td>点击后无响应/操作失败</td><td>未加等待，SAP响应延迟</td><td>关键操作后加 <code>time.sleep(1-3)</code> 或【等待元素】指令</td></tr>
+            <tr><td>"记录被其他用户锁定"</td><td>多用户并发操作冲突</td><td>加随机延时(1-3秒)错开操作，非高峰时段运行</td></tr>
+            <tr><td>会话超时登出</td><td>SAP会话空闲超时</td><td>每隔5-10分钟发送心跳操作（如按F3返回首页/F5刷新）</td></tr>
+            <tr><td>弹出确认/警告框</td><td>SAP频繁弹窗</td><td>每次关键操作后检查 <code>wnd[1]</code> 是否存在并处理</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源：SAP开启录制与回放功能<sup><a href="#cite-12">[12]</a></sup>；影刀RPA ERP系统操作<sup><a href="#cite-5">[5]</a></sup>；影刀RPA SAP系统自动化入门<sup><a href="#cite-1">[1]</a></sup>。</p>
+    </section>
+
+    <section id="pitfalls">
+      <h2>踩坑提示</h2>
+      <div class="callout warning">
+        <p>⚠️ <strong>服务端参数重启丢失</strong>：RZ11 更改立即生效但系统重启后丢失，需联系 SAP Basis 管理员做永久配置<sup><a href="#cite-8">[8]</a></sup>。</p>
+        <p>⚠️ <strong>元素ID变化</strong>：SAP GUI 的控件 ID 会根据屏幕布局变化，录制好的脚本可能失效。用"根据特征"定位方式，结合文本、位置等多个特征；优先用控件路径(ID)而非菜单文字定位<sup><a href="#cite-5">[5]</a></sup>。</p>
+        <p>⚠️ <strong>多语言界面</strong>：SAP 支持多语言，菜单路径会因语言不同而位置变化。控件路径(如 <code>ctxtMATNR</code>)是固定的，不受语言影响，建议通过子ID而非菜单文字定位<sup><a href="#cite-1">[1]</a></sup>。</p>
+        <p>⚠️ <strong>权限不足</strong>：某些事务码需要特定权限。提前确认 SAP 账号权限，或在流程中捕获权限错误并通知管理员<sup><a href="#cite-5">[5]</a></sup>。</p>
+        <p>⚠️ <strong>图像识别被Windows拦截</strong>：Windows 11 需关闭"屏幕截图工具"的后台权限，否则影刀截屏识别时会被系统拦截<sup><a href="#cite-10">[10]</a></sup>。</p>
+        <p>⚠️ <strong>建立元素库</strong>：把常用的 SAP 界面元素保存到元素库，提高流程稳定性<sup><a href="#cite-5">[5]</a></sup>。</p>
+        <p>⚠️ <strong>批处理模式</strong>：一次处理一个 Excel 文件的所有订单，减少登录次数<sup><a href="#cite-5">[5]</a></sup>。</p>
+      </div>
+
+      <div class="callout success">
+        <p><strong>SAP 自动化核心路径：</strong>先尝试 SAP 脚本录制获取精确控件路径 → 用 win32com.client 直接调用控件(最稳) → 处理好等待和弹窗 → 做好异常日志<sup><a href="#cite-1">[1]</a></sup>。</p>
+        <p><strong>建议从简单场景入手：</strong>先从简单的报表导出开始，逐步过渡到复杂的数据录入场景<sup><a href="#cite-5">[5]</a></sup>。</p>
+      </div>
+    </section>
+
+    <nav class="page-pager" aria-label="上一篇与下一篇导航">
+      <a href="ai.html" class="pager-prev"><span class="pg-label">← 上一篇</span><span class="pg-title">影刀结合AI</span></a>
+      <a href="index.html" class="pager-next"><span class="pg-label">返回首页 →</span><span class="pg-title">知识库总览</span></a>
+    </nav>
+  </main>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部">↑</button>
+
+<footer>
+  <div class="container">
+    <div class="sources">
+      <h2>参考来源</h2>
+      <ol>
+        <li id="cite-1"><span class="src-title">影刀RPA SAP系统自动化入门：不用学ABAP也能操控ERP, 四大难点、三种捕获方法、COM接口、ALV表格。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/162744995" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/162744995</a></li>
+        <li id="cite-2"><span class="src-title">SAP GUI Scripting与脚本跟踪, 脚本功能默认关闭根因。</span><a href="https://blog.csdn.net/weixin_31061699/article/details/167190094" target="_blank" rel="noopener">https://blog.csdn.net/weixin_31061699/article/details/167190094</a></li>
+        <li id="cite-3"><span class="src-title">影刀RPA+OA/SAP，实现企业信息管理数智化, 非侵入性与常见场景。</span><a href="https://c.m.163.com/news/a/GJA8010D0514VN15.html" target="_blank" rel="noopener">https://c.m.163.com/news/a/GJA8010D0514VN15.html</a></li>
+        <li id="cite-4"><span class="src-title">影刀RPA实战：SAP自动化配置全流程解析, 影刀侧准备与财务关账案例。</span><a href="https://blog.csdn.net/weixin_29292431/article/details/158899083" target="_blank" rel="noopener">https://blog.csdn.net/weixin_29292431/article/details/158899083</a></li>
+        <li id="cite-5"><span class="src-title">影刀RPA ERP系统操作：SAP基础操作自动化, 登录/T-Code/录制/元素库/批处理。</span><a href="https://blog.csdn.net/linyanRPA/article/details/162668360" target="_blank" rel="noopener">https://blog.csdn.net/linyanRPA/article/details/162668360</a></li>
+        <li id="cite-6"><span class="src-title">自己动手实现SAP GUI自动化(艺赛旗社区), 服务端开启前提。</span><a href="https://support.i-search.com.cn/article/1538017933135" target="_blank" rel="noopener">https://support.i-search.com.cn/article/1538017933135</a></li>
+        <li id="cite-7"><span class="src-title">启用SAP GUI脚本设置, RZ11参数配置步骤。</span><a href="https://blog.csdn.net/dw790451656/article/details/101163871" target="_blank" rel="noopener">https://blog.csdn.net/dw790451656/article/details/101163871</a></li>
+        <li id="cite-8"><span class="src-title">云扩学院-SAP自动化配置步骤, 客户端启用脚本与对话框模式。</span><a href="https://academy.encoo.com/wiki/Activities/SAP/SAP%20Configuration.md" target="_blank" rel="noopener">https://academy.encoo.com/wiki/Activities/SAP/SAP%20Configuration.md</a></li>
+        <li id="cite-9"><span class="src-title">SAP自动化实战：用影刀RPA5分钟完成采购订单处理, ME21N批量创建。</span><a href="https://blog.csdn.net/spark7igniter/article/details/155089939" target="_blank" rel="noopener">https://blog.csdn.net/spark7igniter/article/details/155089939</a></li>
+        <li id="cite-10"><span class="src-title">影刀RPA新手教程：图像识别进阶实战——锚点定位与相对坐标偏移, 桌面四合一拾取。</span><a href="https://blog.csdn.net/VXHAruanjian888/article/details/167163377" target="_blank" rel="noopener">https://blog.csdn.net/VXHAruanjian888/article/details/167163377</a></li>
+        <li id="cite-11"><span class="src-title">壹沓帮助中心-如何处理无法拾取SAP元素的问题？, 拾取失败应对。</span><a href="https://doc.1datatech.net/robot/" target="_blank" rel="noopener">https://doc.1datatech.net/robot/</a></li>
+        <li id="cite-12"><span class="src-title">SAP开启录制与回放功能, 原生录制步骤与T-Code说明。</span><a href="https://blog.csdn.net/qq_34276316/article/details/135078992" target="_blank" rel="noopener">https://blog.csdn.net/qq_34276316/article/details/135078992</a></li>
+        <li id="cite-13"><span class="src-title">影刀社区-如何修改SAP表格内容, 读取SAP表格与桌面软件自动化指令。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=811399114915061760" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=811399114915061760</a></li>
+        <li id="cite-14"><span class="src-title">影刀RPA官方文档：SAP自动化配置（RZ11参数、客户端启用脚本、模态对话框、100% DPI）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/710737902308896768" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/710737902308896768</a></li>
+        <li id="cite-15"><span class="src-title">影刀RPA官方文档：选中树节点(sap)指令（节点路径如"SAP菜单/会计核算/控制"）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/711515410511413248" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/711515410511413248</a></li>
+        <li id="cite-16"><span class="src-title">影刀RPA官方文档：点击工具栏按钮(sap)指令（按钮名如过账/保存/执行）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/757849808331407360" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/757849808331407360</a></li>
+        <li id="cite-17"><span class="src-title">影刀RPA官方文档：导出表格(SAP)指令（SAPGUIGridView右键电子表格导出Excel）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/711824183000510464" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/711824183000510464</a></li>
+        <li id="cite-18"><span class="src-title">利用RPA实现SAP自动入账（猿急送案例），Scripting Tracker录制法。</span><a href="https://www.yuanjisong.com/conproduction/220856" target="_blank" rel="noopener">https://www.yuanjisong.com/conproduction/220856</a></li>
+        <li id="cite-19"><span class="src-title">影刀社区-如何在SAP中做总账预制凭证（FB01/FB50）。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=983299416678555648" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=983299416678555648</a></li>
+        <li id="cite-20"><span class="src-title">SAP FI系列(015)-手工录入会计凭证（FB01抬头/行项目/posting key）。</span><a href="https://blog.csdn.net/stone0823/article/details/105915077" target="_blank" rel="noopener">https://blog.csdn.net/stone0823/article/details/105915077</a></li>
+        <li id="cite-21"><span class="src-title">效率翻倍,错误归零:影刀RPA如何重塑制造业财务共享中心（银企对账4h→15min）。</span><a href="https://www.yingdao.com/encyclopedia/detail?uuid=887991229209202688" target="_blank" rel="noopener">https://www.yingdao.com/encyclopedia/detail?uuid=887991229209202688</a></li>
+        <li id="cite-22"><span class="src-title">年终财务关账:如何利用RPA应对海量数据处理与对账压力（8200条流水对账）。</span><a href="https://www.yingdao.com/encyclopedia/detail?uuid=897328945710612480" target="_blank" rel="noopener">https://www.yingdao.com/encyclopedia/detail?uuid=897328945710612480</a></li>
+        <li id="cite-23"><span class="src-title">SAP FICO常用事务码分类汇总（FI-GL/AP/AR/AA + CO-CCA/IO/PC）。</span><a href="https://blog.csdn.net/qq_37515544/article/details/154393143" target="_blank" rel="noopener">https://blog.csdn.net/qq_37515544/article/details/154393143</a></li>
+        <li id="cite-24"><span class="src-title">影刀社区-SAP导出表格指令之无法导出Excel的问题（ALV弹窗处理）。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=0492bd36-f8de-4a47-9ea6-189d82ef7320" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=0492bd36-f8de-4a47-9ea6-189d82ef7320</a></li>
+        <li id="cite-25"><span class="src-title">影刀社区-从OA系统提取结算单号后核对SAP系统与电子发票明细。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=924450565726318592" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=924450565726318592</a></li>
+        <li id="cite-26"><span class="src-title">AS01 in SAP How to Create an Asset（资产分类/公司代码/General/Time Dependent标签）。</span><a href="https://sapficoblog.com/as01-in-sap-how-to-create-an-asset/" target="_blank" rel="noopener">https://sapficoblog.com/as01-in-sap-how-to-create-an-asset/</a></li>
+        <li id="cite-27"><span class="src-title">SAP Simple Finance Create an Asset（Tutorialspoint）。</span><a href="https://www.tutorialspoint.com/sap_simple_finance/sap_simple_finance_create_an_asset.htm" target="_blank" rel="noopener">https://www.tutorialspoint.com/sap_simple_finance/sap_simple_finance_create_an_asset.htm</a></li>
+        <li id="cite-28"><span class="src-title">SAP S/4HANA FICO:手工银行对账实战与电子银行对账单入门（FF67/EBS）。</span><a href="https://www.yesdotnet.com/archive/sap-s4hana-mm-2025/829207587647557.html" target="_blank" rel="noopener">https://www.yesdotnet.com/archive/sap-s4hana-mm-2025/829207587647557.html</a></li>
+        <li id="cite-29"><span class="src-title">【学习笔记】CO内部订单（KO01创建/结算规则/KO8G批量结算）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/115432573" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/115432573</a></li>
+        <li id="cite-30"><span class="src-title">SAP设备维护—维护工单的结算（KO88/KO8G/结算结构配置）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/134128157" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/134128157</a></li>
+        <li id="cite-31"><span class="src-title">SAP生产订单报工、取消报工和查询报工操作讲解（CO11N/CO13/COOIS）。</span><a href="https://developer.cloud.tencent.cn/news/1332423" target="_blank" rel="noopener">https://developer.cloud.tencent.cn/news/1332423</a></li>
+        <li id="cite-32"><span class="src-title">【PP操作手册】成品入库和订单报工（CO11N自动收货/工序确认）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/81394601" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/81394601</a></li>
+        <li id="cite-33"><span class="src-title">FI模块所有常用T-CODE（博客园，FB01/FBL1N/FBL5N/FF67等）。</span><a href="https://www.cnblogs.com/sap-ronny/articles/9047804.html" target="_blank" rel="noopener">https://www.cnblogs.com/sap-ronny/articles/9047804.html</a></li>
+      </ol>
+    </div>
+  </div>
+  <div class="copy">© 2026 影刀RPA 使用教程知识库 · 内容整理自公开权威资料，仅供学习参考，版权归原作者所有</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
+<script src="assets/search-index.js?v=20261010a" defer></script>
+<script src="assets/charts.js?v=20261010a" defer></script>
+<script src="assets/app.js?v=20261010a" defer></script>
+<script>
+/* ECharts：SAP四种元素拾取策略对比雷达图 */
+function sapStrategyChartFn(box) {
+  if (!window.echarts || !window.YDCharts) return;
+  var A = window.YDCharts.ACCENT, A2 = window.YDCharts.ACCENT2;
+  window.YDCharts.render(box, {
+    title: { text: 'SAP四种元素拾取策略对比', left: 'center', textStyle: { fontSize: 14 } },
+    tooltip: {},
+    legend: { data: ['SAP GUI Scripting', '图像识别', '坐标定位', '快捷键/T-Code'], top: 28 },
+    radar: {
+      indicator: [
+        { name: '稳定性', max: 5 }, { name: '可迁移性', max: 5 },
+        { name: '操作精度', max: 5 }, { name: '开发容易度', max: 5 }, { name: '适用范围', max: 5 }
+      ],
+      radius: '60%'
+    },
+    series: [{
+      type: 'radar',
+      data: [
+        { value: [5, 5, 5, 3, 4], name: 'SAP GUI Scripting', itemStyle: { color: A }, areaStyle: { color: A, opacity: 0.2 } },
+        { value: [3, 3, 4, 4, 4], name: '图像识别', itemStyle: { color: A2 }, areaStyle: { color: A2, opacity: 0.12 } },
+        { value: [2, 2, 5, 5, 2], name: '坐标定位', itemStyle: { color: '#0a6bd1' }, areaStyle: { color: '#0a6bd1', opacity: 0.1 } },
+        { value: [4, 5, 5, 5, 3], name: '快捷键/T-Code', itemStyle: { color: '#059669' }, areaStyle: { color: '#059669', opacity: 0.1 } }
+      ]
+    }]
+  });
+}
+</script>
+</body>
+</html>
