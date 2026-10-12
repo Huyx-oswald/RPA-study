@@ -1,6 +1,6 @@
 /* ============================================================
-   影刀RPA 使用教程知识库 - 统一样式
-   品牌色：影刀橙红 (#FF4D2D)
+   RPA软件使用教程知识库 - 统一样式
+   配色：中性深蓝学术风 (#1a4d7a)
    组件：topnav / docs-shell / sidebar / callout / table / mermaid / pager / progress
    ============================================================ */
 
@@ -11,12 +11,12 @@
   --ink: #3c3c43;
   --muted: #63666e;
   --rule: #e6e6e8;
-  /* 影刀品牌橙红 */
-  --accent: #ff4d2d;
-  --accent2: #ff6b3d;
-  --accent-soft: rgba(255,77,45,0.08);
-  --accent-soft2: rgba(255,77,45,0.14);
-  --accent-ink: #c9381f;
+  /* 中性深蓝学术风 */
+  --accent: #1a4d7a;
+  --accent2: #2a6dad;
+  --accent-soft: rgba(26,77,122,0.08);
+  --accent-soft2: rgba(26,77,122,0.14);
+  --accent-ink: #0d3559;
   --success: #059669;
   --warning: #d97706;
   --danger: #dc2626;
@@ -95,7 +95,7 @@ sup a { color: var(--accent); font-weight: 600; }
 .brand .logo-dot {
   width: 22px; height: 22px; border-radius: 6px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
-  box-shadow: 0 2px 6px rgba(255,77,45,0.35);
+  box-shadow: 0 2px 6px rgba(26,77,122,0.35);
 }
 .topnav-links { display: flex; gap: 4px; }
 .topnav-links a {
@@ -187,8 +187,8 @@ sup a { color: var(--accent); font-weight: 600; }
 .stats-strip {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
   gap: 12px; margin: 22px 0; padding: 18px;
-  background: linear-gradient(135deg, var(--accent-soft), rgba(255,107,61,0.04));
-  border: 1px solid rgba(255,77,45,0.18);
+  background: linear-gradient(135deg, var(--accent-soft), rgba(42,109,173,0.04));
+  border: 1px solid rgba(26,77,122,0.18);
   border-radius: var(--radius-lg);
 }
 .stats-strip .stat .num { font-size: 1.55rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
@@ -247,7 +247,7 @@ figure.diagram figcaption {
   padding: 16px; border: 1px solid var(--rule); border-radius: var(--radius);
   background: #fff; transition: var(--transition);
 }
-.card:hover { box-shadow: var(--shadow); border-color: rgba(255,77,45,0.3); transform: translateY(-2px); }
+.card:hover { box-shadow: var(--shadow); border-color: rgba(26,77,122,0.3); transform: translateY(-2px); }
 .card h4 { margin-top: 0; color: var(--accent); }
 .card p { font-size: 0.85rem; color: var(--muted); margin: 6px 0 0; }
 

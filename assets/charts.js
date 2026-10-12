@@ -13,11 +13,11 @@
       theme: 'base',
       securityLevel: 'loose',
       themeVariables: {
-        primaryColor: '#ffe7e1',
-        primaryTextColor: '#c9381f',
-        primaryBorderColor: '#ff4d2d',
-        lineColor: '#8a6b63',
-        secondaryColor: '#fff4f0',
+        primaryColor: '#e3edf5',
+        primaryTextColor: '#0d3559',
+        primaryBorderColor: '#1a4d7a',
+        lineColor: '#5a7a99',
+        secondaryColor: '#eaf2fa',
         tertiaryColor: '#fafafa',
         fontSize: '13px',
         fontFamily: '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif'
@@ -32,8 +32,8 @@
     v = v ? v.trim() : '';
     return v || fallback;
   }
-  var ACCENT = cssVar('--accent', '#ff4d2d');
-  var ACCENT2 = cssVar('--accent2', '#ff6b3d');
+  var ACCENT = cssVar('--accent', '#1a4d7a');
+  var ACCENT2 = cssVar('--accent2', '#2a6dad');
   var INK = cssVar('--ink', '#3c3c43');
   var MUTED = cssVar('--muted', '#63666e');
   var RULE = cssVar('--rule', '#e6e6e8');
