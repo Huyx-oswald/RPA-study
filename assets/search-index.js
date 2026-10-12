@@ -50,6 +50,15 @@ const SEARCH_INDEX = [
   { p: "sap.html", a: "strategies", s: "拾取策略对比", t: "SAP GUI Scripting/图像识别/坐标/快捷键 拾取策略对比", y: "表格" },
   { p: "sap.html", a: "ops", s: "常用操作", t: "SAP登录/事务码T-Code/ALV表格/录制回放", y: "标题" },
   { p: "sap.html", a: "case-po", s: "实战案例", t: "采购订单ME21N批量创建完整流程", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "财务CO/FI 7大案例", t: "SAP财务模块CO/FI七大实战案例：凭证/对账/资产/银行/成本中心/内部订单/报工", y: "标题" },
+  { p: "sap.html", a: "fico-cases", s: "案例1 凭证录入", t: "SAP凭证批量录入与过账FB01/FB50流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例2 对账", t: "SAP应收应付对账自动化FBL1N/FBL5N流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例3 资产折旧", t: "SAP资产购置与折旧自动化AS01/AFAB流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例4 银行清账", t: "SAP银行对账单导入与清账FF67流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例5 成本中心", t: "SAP成本中心主数据批量维护KS01/KS02流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例6 内部订单", t: "SAP内部订单批量创建与结算KO01/KO8G流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例7 生产报工", t: "SAP生产订单工单确认与报工CO11N/CO02流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "事务码速查表", t: "SAP CO/FI常用事务码速查表：FI-GL/AP/AR/AA/BL + CO-CCA/IO/PC", y: "表格" },
   { p: "sap.html", a: "errors", s: "常见报错", t: "SAP自动化常见报错与排查表", y: "表格" },
   { p: "sap.html", a: "pitfalls", s: "踩坑提示", t: "SAP自动化9条踩坑提示与核心路径", y: "标题" }
 ];

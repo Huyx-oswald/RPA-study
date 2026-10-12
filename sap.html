@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>影刀操作SAP | 影刀RPA 教程</title>
-  <meta name="description" content="影刀RPA 操作SAP：SAP GUI Scripting启用、元素拾取策略、登录/事务码/ALV表格/录制回放、采购订单ME21N批量创建实战、常见报错与踩坑。">
-  <meta name="keywords" content="影刀SAP,影刀RPA SAP,SAP GUI Scripting,ME21N,采购订单自动化,SAP自动化">
+  <meta name="description" content="影刀RPA 操作SAP：SAP GUI Scripting启用、元素拾取策略、登录/事务码/ALV表格/录制回放、采购订单ME21N批量创建实战、财务CO/FI模块7大案例（凭证/对账/资产/银行/成本中心/内部订单/报工）、常用事务码速查表、常见报错与踩坑。">
+  <meta name="keywords" content="影刀SAP,影刀RPA SAP,SAP GUI Scripting,ME21N,采购订单自动化,SAP自动化,SAP CO,SAP FI,FB01,FBL1N,AS01,FF67,KS01,KO01,CO11N,财务自动化">
   <meta property="og:title" content="影刀RPA 操作SAP">
-  <meta property="og:description" content="SAP GUI Scripting启用、元素拾取策略、采购订单批量创建">
+  <meta property="og:description" content="SAP GUI Scripting启用、元素拾取策略、采购订单批量创建、财务CO/FI模块7大案例">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="assets/styles.css?v=20261010a">
 </head>
@@ -41,18 +41,19 @@
   <main class="docs-main">
     <div class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>影刀操作SAP</span></div>
     <h1 class="page-title">影刀 RPA 操作 SAP</h1>
-    <p class="page-subtitle">不用学 ABAP 也能操控 ERP · SAP GUI Scripting 启用、元素拾取策略与采购订单批量创建实战</p>
+    <p class="page-subtitle">不用学 ABAP 也能操控 ERP · SAP GUI Scripting 启用、元素拾取策略、采购订单批量创建与财务 CO/FI 模块 7 大实战案例</p>
     <div class="page-meta">
       <span class="meta-tag accent">企业级场景</span>
       <span class="meta-tag">4 大难点</span>
       <span class="meta-tag">含拾取策略对比</span>
+      <span class="meta-tag">8 个实战案例</span>
     </div>
 
     <div class="stats-strip">
       <div class="stat"><div class="num">4</div><div class="lbl">自动化难点</div></div>
       <div class="stat"><div class="num">4</div><div class="lbl">拾取策略</div></div>
-      <div class="stat"><div class="num">ME21N</div><div class="lbl">采购订单实战</div></div>
-      <div class="stat"><div class="num">8</div><div class="lbl">常见报错</div></div>
+      <div class="stat"><div class="num">8</div><div class="lbl">实战案例</div></div>
+      <div class="stat"><div class="num">35+</div><div class="lbl">常用事务码</div></div>
     </div>
 
     <section id="overview">
@@ -297,6 +298,332 @@ graph TD
       </ol>
     </section>
 
+    <section id="fico-cases">
+      <h2>财务场景实战：CO/FI 模块 7 大案例</h2>
+      <p>以下案例覆盖 SAP 财务会计（FI：总账/应收/应付/资产/银行）与管理会计（CO：成本中心/内部订单/生产订单）两大模块的成熟自动化场景，每个含步骤序列流程图、关键 T-Code 与控件路径、踩坑提示。所有案例共用前置配置：服务端 <code>RZ11</code> 开启 <code>sapgui/user_scripting=TRUE</code>，客户端启用脚本并设为模态对话框，屏幕缩放必须 100%<sup><a href="#cite-14">[14]</a></sup>。</p>
+
+      <div class="callout success">
+        <p><strong>影刀SAP专属指令</strong>：获取窗口对象(sap)、点击工具栏按钮(sap)（按钮名如"过账(Pst)/保存(Save)/执行(Exec)"）、选中树节点(sap)（路径如"SAP菜单/会计核算/控制"）、导出表格(SAP)（在SAPGUIGridView元素右键→电子表格→保存）<sup><a href="#cite-14">[14]</a></sup><sup><a href="#cite-15">[15]</a></sup><sup><a href="#cite-16">[16]</a></sup><sup><a href="#cite-17">[17]</a></sup>。</p>
+      </div>
+
+      <h3>案例1：SAP 凭证批量录入与过账（FB01/FB50）<span class="meta-tag accent" style="font-size:.75em">FI-GL</span></h3>
+      <p><strong>场景</strong>：月度结账需将几十至上百张会计凭证（费用计提、费用分摊、调整凭证）逐张录入 SAP 并过账。人工单张耗时2-5分钟，月末集中处理极易疲劳出错<sup><a href="#cite-18">[18]</a></sup><sup><a href="#cite-19">[19]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取Excel凭证数据] --> B[登录SAP]
+    B --> C{事务码选择}
+    C -->|纯总账| D1[FB50 Enjoy界面]
+    C -->|含客户供应商| D2[FB01 标准界面]
+    D1 --> E[填写抬头:日期/类型/公司代码/货币]
+    D2 --> E
+    E --> F[循环行项目]
+    F --> F1[借方:科目/金额/成本中心]
+    F --> F2[贷方:科目/金额/成本中心]
+    F1 --> G[校验借贷平衡]
+    F2 --> G
+    G --> H[点击过账按钮]
+    H --> I[提取状态栏凭证号]
+    I --> J{是否还有凭证}
+    J -->|是| E
+    J -->|否| K[写回凭证号到Excel]
+    K --> L[输出执行日志]
+        </div>
+        <p class="diagram-caption">图：SAP凭证批量录入与过账流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FB01</code>：输入总账凭证（标准模式），支持多行凭证；<code>FB50</code>：Enjoy界面，仅总账科目；<code>F-02</code>：快速模式；<code>FB03</code>：显示凭证（回写校验用）<sup><a href="#cite-19">[19]</a></sup><sup><a href="#cite-20">[20]</a></sup>。</li>
+        <li>抬头字段：<code>凭证日期(BlngDate)</code>、<code>参照(Reference)</code>、<code>凭证类型(DocType)</code>、<code>公司代码(CompanyCode)</code>、<code>过账日期(PstngDate)</code>、<code>货币(Currency)</code>。</li>
+        <li>行项目：<code>科目(G/L Account)</code>、<code>D/C(借/贷)</code>、<code>金额(Amount)</code>、<code>成本中心(Cost Center)</code>、<code>利润中心(Profit Center)</code>、<code>文本(Text)</code>。</li>
+        <li>过账按钮：工具栏按钮名"过账(Pst)"<sup><a href="#cite-16">[16]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>posting key 概念</strong>：FB50 仅总账科目；含客户/供应商须 FB01 配 posting key（01=借客户、50=贷总账），否则无法过账<sup><a href="#cite-20">[20]</a></sup>。</p>
+        <p>⚠️ <strong>借贷不平衡</strong>直接报错阻断：影刀先用计算指令对 Excel 每张凭证求和校验借贷相等，不平衡的行标红跳过。</p>
+        <p>⚠️ <strong>凭证号提取</strong>：过账成功后状态栏显示"凭证 ×××× 已过账"，用"获取SAP状态栏文本"提取，注意多语言文案差异。</p>
+        <p>⚠️ <strong>会计期间未开</strong>：OB52 未开放当月期间会过账失败，流程前确认期间已开或加前置检查。</p>
+        <p>⚠️ <strong>Scripting Tracker 录制法</strong>：社区推荐先用 Scripting Tracker 录制一遍 SAP 操作生成 Python 代码，复制到影刀调整参数<sup><a href="#cite-18">[18]</a></sup>。</p>
+      </div>
+
+      <h3>案例2：SAP 应收/应付对账自动化（FBL1N/FBL5N）<span class="meta-tag accent" style="font-size:.75em">FI-AP/AR</span></h3>
+      <p><strong>场景</strong>：定期导出 AP/AR 明细，与银行流水或内部系统对账。汽车零部件企业案例：对账时间从4小时缩短至15分钟，准确率100%<sup><a href="#cite-21">[21]</a></sup><sup><a href="#cite-22">[22]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[输入筛选:供应商范围/公司代码/日期] --> B{对账类型}
+    B -->|应付AP| C1[执行FBL1N 供应商行项目]
+    B -->|应收AR| C2[执行FBL5N 客户行项目]
+    C1 --> D[ALV报表生成]
+    C2 --> D
+    D --> E[导出表格SAP指令:右键电子表格存Excel]
+    E --> F[读取AP/AR明细]
+    F --> G[登录网银下载流水Excel]
+    G --> H[按结算单号/金额/日期匹配]
+    H --> I[标记差异:多付/少付/未核销]
+    I --> J[生成对账报告+余额调节表]
+        </div>
+        <p class="diagram-caption">图：应收/应付对账自动化流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FBL1N</code>：供应商行项目显示；<code>FBL5N</code>：客户行项目显示；<code>FK10N</code>/<code>FD10N</code>：供应商/客户余额概览<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li>ALV 网格控件名形如 <code>SAPGUIGridViewCtrl1</code>，用影刀【导出表格(SAP)】指令：右键→电子表格→指定 <code>save_path</code><sup><a href="#cite-17">[17]</a></sup>。</li>
+        <li>筛选界面：<code>供应商/客户范围(Account)</code>、<code>公司代码</code>、<code>未清项/已清项/全部</code>、<code>过账日期</code>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>ALV导出弹窗</strong>：导出时 SAP 可能弹出格式/路径选择窗口，需提前捕获弹窗元素自动确认，否则卡住<sup><a href="#cite-24">[24]</a></sup>。</p>
+        <p>⚠️ <strong>大数据量分页</strong>：上千行时 SAP 默认分批加载，导出前需确保完整加载（设显示行数上限或循环翻页）。</p>
+        <p>⚠️ <strong>结算单号格式不一致</strong>：OA与SAP单号可能有前导零/分隔符差异，匹配前需在影刀做格式标准化<sup><a href="#cite-25">[25]</a></sup>。</p>
+        <p>⚠️ <strong>未清/已清项混淆</strong>：对账须明确筛"未清项"还是"已清项"，勾错导致余额对不上。</p>
+      </div>
+
+      <h3>案例3：SAP 资产购置与折旧自动化（AS01/AFAB）<span class="meta-tag accent" style="font-size:.75em">FI-AA</span></h3>
+      <p><strong>场景</strong>：年度初批量创建固定资产主数据，月末执行折旧运行（AFAB）生成折旧凭证<sup><a href="#cite-26">[26]</a></sup><sup><a href="#cite-27">[27]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取资产清单Excel] --> B[登录SAP]
+    B --> C[循环每条资产]
+    C --> D[执行AS01]
+    D --> E[输入资产分类+公司代码]
+    E --> F[回车进主数据明细]
+    F --> G[General标签:填资产描述]
+    G --> H[Time Dependent标签:填成本中心]
+    H --> I[填写购置值/折旧码/年限]
+    I --> J[保存提取资产主编号]
+    J --> K[写回Excel]
+    K --> L{是否还有资产}
+    L -->|是| D
+    L -->|否| M[月末执行AFAB折旧运行]
+    M --> N[输入公司代码+会计期间]
+    N --> O[测试运行→正式运行]
+    O --> P[检查运行日志/折旧凭证过账]
+    P --> Q[导出折旧报表]
+        </div>
+        <p class="diagram-caption">图：资产购置与折旧自动化流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>AS01</code>：创建资产（<code>资产分类</code>+<code>公司代码</code>→General标签填<code>描述</code>，Time Dependent标签填<code>成本中心</code>）；<code>AS02</code>修改；<code>AS03</code>显示<sup><a href="#cite-26">[26]</a></sup>。</li>
+        <li><code>AFAB</code>：折旧运行（输入公司代码+期间）；<code>AW01N</code>：资产浏览器；<code>ABAVN</code>：资产报废；<code>AJRW</code>：年终结转<sup><a href="#cite-23">[23]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>资产分类选错</strong>：分类（土地不折旧/IT设备3年/建筑20年）决定折旧规则，Excel 中先校验分类与折旧码匹配。</p>
+        <p>⚠️ <strong>成本中心必填</strong>：Time Dependent标签成本中心为空时折旧无法记入正确成本对象，AFAB 可能报错。</p>
+        <p>⚠️ <strong>AFAB 测试运行优先</strong>：务必先"测试运行(Test Run)"检查无报错再正式运行，避免错误折旧凭证。</p>
+        <p>⚠️ <strong>资产主编号回写</strong>：AS01 保存后返回主资产号，需抓取状态栏提取，后续查询依赖此号。</p>
+      </div>
+
+      <h3>案例4：SAP 银行对账单导入与清账（FF67）<span class="meta-tag accent" style="font-size:.75em">FI-BL</span></h3>
+      <p><strong>场景</strong>：将银行流水导入 SAP 并自动清账。某集团每月8200+条流水对账，影刀让8个财务人员高效处理<sup><a href="#cite-22">[22]</a></sup><sup><a href="#cite-28">[28]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[影刀登录网银下载流水Excel] --> B[读取银行流水]
+    B --> C[登录SAP执行FF67]
+    C --> D[填抬头:公司代码/开户行/账户ID/对账单号/日期/期初期末余额]
+    D --> E[循环每条流水]
+    E --> F[输入业务交易码+金额+value date+摘要]
+    F --> G{是否还有流水}
+    G -->|是| E
+    G -->|否| H[保存对账单触发自动清账]
+    H --> I[处理未清项:F.13自动清账/F-44手动]
+    I --> J[导出清账报告:余额调节表]
+        </div>
+        <p class="diagram-caption">图：银行对账单导入与清账流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FF67</code>：手工银行对账单录入。抬头：<code>公司代码</code>、<code>开户行(HouseBank)</code>、<code>账户ID</code>、<code>对账单编号</code>、<code>对账单日期</code>、<code>期初/期末余额</code>、<code>过账日期</code>。</li>
+        <li>行项目：<code>业务交易码(EZK借/EZI贷)</code>、<code>金额</code>、<code>估价日(ValueDate)</code>、<code>分配</code>、<code>文本</code>。</li>
+        <li><code>F.13</code>：自动清账；<code>F-44</code>：供应商清账；<code>F-32</code>：客户清账<sup><a href="#cite-23">[23]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>业务交易码映射</strong>：流水业务类型须映射为 SAP 业务码（EZK=客户收款借方/EZI=供应商付款贷方），映射表错则清账方向错。</p>
+        <p>⚠️ <strong>期初期末余额不平</strong>：FF67 要求"期初+借方合计-贷方合计=期末"，影刀录入前用计算指令校验平衡。</p>
+        <p>⚠️ <strong>对账单编号唯一性</strong>：同开户行+账户ID的对账单编号不可重复，Excel 维护递增编号列。</p>
+        <p>⚠️ <strong>大额流水导入慢</strong>：上百行逐条录 FF67 慢，可考虑电子银行对账单(EBS)文件导入替代<sup><a href="#cite-28">[28]</a></sup>。</p>
+      </div>
+
+      <h3>案例5：SAP 成本中心主数据批量维护（KS01/KS02）<span class="meta-tag accent" style="font-size:.75em">CO-CCA</span></h3>
+      <p><strong>场景</strong>：年度初批量创建/修改成本中心（新建车间、调整组织架构、变更负责人）<sup><a href="#cite-23">[23]</a></sup><sup><a href="#cite-15">[15]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取成本中心Excel] --> B[登录SAP]
+    B --> C{新建或修改}
+    C -->|新建| D1[执行KS01]
+    C -->|修改| D2[执行KS02]
+    D1 --> E[输入成本中心编号+控制范围]
+    D2 --> E
+    E --> F[回车进主数据]
+    F --> G[基本标签:描述/负责人/类型]
+    G --> H[层次标签:标准层次位置]
+    H --> I[公司代码标签:关联公司代码]
+    I --> J[输入有效期]
+    J --> K[保存]
+    K --> L{是否还有记录}
+    L -->|是| D1
+    L -->|否| M[批量激活/解锁]
+    M --> N[导出KS13清单校验]
+        </div>
+        <p class="diagram-caption">图：成本中心主数据批量维护流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KS01</code>：创建（<code>成本中心编号</code>+<code>控制范围</code>→基本标签填<code>描述/负责人/类型/层次</code>）；<code>KS02</code>修改；<code>KS03</code>显示；<code>KS13</code>清单导出校验<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li><code>KSH1</code>：创建成本中心组；<code>KSV1</code>：创建实际分配循环。</li>
+        <li>树节点操作可用影刀【选中树节点(sap)】指令，路径如"SAP菜单/会计核算/控制"<sup><a href="#cite-15">[15]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>标准层次必填</strong>：每个成本中心须挂在标准层次节点下，层次路径错会导致孤立，报表查不到。</p>
+        <p>⚠️ <strong>控制范围一致性</strong>：批量导入的多个成本中心须属同一控制范围，跨范围需分批处理。</p>
+        <p>⚠️ <strong>有效期与锁定</strong>：有效期设在未来则当前无法记账；已过账的不能删除只能锁定，KS02 解锁需在有效期内。</p>
+        <p>⚠️ <strong>公司代码关联</strong>：成本中心须关联公司代码才能记成本凭证，漏关联则 KB1N 记账报错。</p>
+      </div>
+
+      <h3>案例6：SAP 内部订单批量创建与结算（KO01/KO8G）<span class="meta-tag accent" style="font-size:.75em">CO-IO</span></h3>
+      <p><strong>场景</strong>：项目型企业（研发/营销/技改）的内部订单创建与月末结算。月末用 KO8G 批量结算到目标成本中心/在建工程<sup><a href="#cite-29">[29]</a></sup><sup><a href="#cite-30">[30]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取订单Excel] --> B[登录SAP]
+    B --> C[循环每条订单]
+    C --> D[执行KO01]
+    D --> E[选择订单类型+公司代码]
+    E --> F[回车进主数据]
+    F --> G[基本标签:描述/负责人]
+    G --> H[结算规则标签:定义结算分配]
+    H --> I[预算标签:维护预算KO22]
+    I --> J[保存提取订单号写回Excel]
+    J --> K{是否还有订单}
+    K -->|是| D
+    K -->|否| L[月末执行KO8G批量结算]
+    L --> M[输入结算范围+期间]
+    M --> N[测试运行→检查日志]
+    N --> O[正式运行→生成结算凭证]
+    O --> P[导出结算报告KOB1/KO03]
+        </div>
+        <p class="diagram-caption">图：内部订单批量创建与结算流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KO01</code>：新建（订单类型：费用型/收入型）；<code>KO02</code>：修改（维护结算规则）；<code>KO03</code>：显示；<code>KOK3</code>：集中显示<sup><a href="#cite-23">[23]</a></sup>。</li>
+        <li><code>KO88</code>：单个结算；<code>KO8G</code>：批量结算（月末用）；<code>KOB1</code>：行项目显示；<code>KO22</code>：维护预算<sup><a href="#cite-29">[29]</a></sup>。</li>
+        <li>结算规则控件为表格控件（行：结算类别/接收者/百分比/源）。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>结算规则必须维护</strong>：KO01 建单后未配结算规则则 KO8G 跳过该订单，建议建单即配规则。</p>
+        <p>⚠️ <strong>KO88 vs KO8G</strong>：KO88 单个、KO8G 批量；首次用"全量"，后续月份用"Δ(差异)"，选错会重复结算。</p>
+        <p>⚠️ <strong>测试运行先行</strong>：KO8G 必须先"测试运行(Test Run)"检查无报错再正式运行。</p>
+        <p>⚠️ <strong>订单状态控制</strong>：订单须为"REL(已释放)"状态才能结算，建单后需 KO02 释放。</p>
+      </div>
+
+      <h3>案例7：SAP 生产订单工单确认与报工（CO11N/CO02）<span class="meta-tag accent" style="font-size:.75em">CO-PC</span></h3>
+      <p><strong>场景</strong>：制造企业每天对生产工单报工确认（完成数量、耗用工时），漏报/错报影响成本核算与在制品(WIP)<sup><a href="#cite-31">[31]</a></sup><sup><a href="#cite-32">[32]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取报工数据Excel] --> B[登录SAP]
+    B --> C[循环每条报工]
+    C --> D[执行CO11N]
+    D --> E[输入生产订单号回车]
+    E --> F[选择工序号]
+    F --> G[选择确认类型:部分/最终/自动最终]
+    G --> H[输入良品产量]
+    H --> I[输入废品数量+确认工时]
+    I --> J[填确认人员/日期]
+    J --> K[保存提取确认号]
+    K --> L[写回Excel]
+    L --> M{是否还有报工}
+    M -->|是| D
+    M -->|否| N[处理差异:CO02修改/CO13取消]
+    N --> O[导出报工报表COOIS/KOB1]
+        </div>
+        <p class="diagram-caption">图：生产订单工单确认与报工流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>CO11N</code>：报工（<code>订单号</code>+回车→<code>工序号</code>→<code>确认类型</code>→<code>产量/废品/工时</code>）；<code>CO11</code>旧界面；<code>CO15</code>：按订单整体确认<sup><a href="#cite-31">[31]</a></sup>。</li>
+        <li><code>CO02</code>：修改订单；<code>CO13</code>：取消报工确认；<code>COOIS</code>：生产订单信息系统（导出报表）；<code>KOB1</code>：订单成本<sup><a href="#cite-32">[32]</a></sup>。</li>
+        <li><code>CO88</code>：生产订单结算；<code>KKAO</code>：计算WIP；<code>KKS1</code>：计算差异。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>工序顺序报工</strong>：多工序必须按前后顺序依次报工，不得从后往前，否则后工序报工被拦截。影刀循环前按工序号升序排序 Excel。</p>
+        <p>⚠️ <strong>确认类型选择</strong>：部分确认(Partial)可多次累加；最终确认(Final)后不可再报；批量默认用部分确认，完工才用最终确认<sup><a href="#cite-31">[31]</a></sup>。</p>
+        <p>⚠️ <strong>良品+废品≤订单数量</strong>：超量 SAP 报错，Excel 预处理校验。</p>
+        <p>⚠️ <strong>报工自动收货</strong>：CO11N 可触发自动入库，若后台配了自动收货则报工后库存自动增加，影刀无需另做 MIGO<sup><a href="#cite-32">[32]</a></sup>。</p>
+        <p>⚠️ <strong>取消报工用 CO13</strong>：报工错误须 CO13 取消原确认再重报，不能直接 CO02 改数量。</p>
+      </div>
+
+      <h3>SAP CO/FI 常用事务码速查表</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>模块</th><th>事务码</th><th>描述</th><th>关键功能</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="6">FI-GL</td><td><code>FB01</code></td><td>输入总账凭证(标准)</td><td>多行凭证录入</td></tr>
+            <tr><td><code>FB50</code></td><td>输入总账凭证(Enjoy)</td><td>仅总账科目</td></tr>
+            <tr><td><code>FB03</code></td><td>显示凭证</td><td>查凭证详情/导出PDF</td></tr>
+            <tr><td><code>FBL3N</code></td><td>总账行项目显示</td><td>按科目/日期查询</td></tr>
+            <tr><td><code>FS10N</code></td><td>科目余额显示</td><td>查当前余额</td></tr>
+            <tr><td><code>OB52</code></td><td>维护会计期间</td><td>开/关期间</td></tr>
+            <tr><td rowspan="4">FI-AP</td><td><code>FK01</code></td><td>创建供应商</td><td>录入供应商信息</td></tr>
+            <tr><td><code>F-43</code></td><td>输入供应商发票</td><td>触发应付增加</td></tr>
+            <tr><td><code>FBL1N</code></td><td>供应商行项目显示</td><td>查应付明细/导出Excel</td></tr>
+            <tr><td><code>F-44</code></td><td>供应商清账</td><td>核销应付</td></tr>
+            <tr><td rowspan="4">FI-AR</td><td><code>FD01</code></td><td>创建客户</td><td>录入客户信息</td></tr>
+            <tr><td><code>F-28</code></td><td>客户收款过账</td><td>记录付款/核销应收</td></tr>
+            <tr><td><code>FBL5N</code></td><td>客户行项目显示</td><td>查应收明细/导出Excel</td></tr>
+            <tr><td><code>F-32</code></td><td>客户清账</td><td>核销应收</td></tr>
+            <tr><td rowspan="4">FI-AA</td><td><code>AS01</code></td><td>创建资产主数据</td><td>录入资产/类别/原值</td></tr>
+            <tr><td><code>AFAB</code></td><td>资产折旧运行</td><td>自动计算并过账折旧</td></tr>
+            <tr><td><code>AW01N</code></td><td>资产浏览器</td><td>查看资产详情</td></tr>
+            <tr><td><code>AJRW</code></td><td>资产年度结转</td><td>余额结转至下年</td></tr>
+            <tr><td rowspan="2">FI-BL</td><td><code>FF67</code></td><td>手工银行对账单录入</td><td>流水导入与清账</td></tr>
+            <tr><td><code>F.13</code></td><td>自动清账</td><td>自动核销未清项</td></tr>
+            <tr><td rowspan="4">CO-CCA</td><td><code>KS01</code></td><td>创建成本中心</td><td>定义成本中心</td></tr>
+            <tr><td><code>KS02</code></td><td>修改成本中心</td><td>调整名称/负责人</td></tr>
+            <tr><td><code>KS13</code></td><td>成本中心清单</td><td>列表导出校验</td></tr>
+            <tr><td><code>KSV1</code></td><td>创建分配循环</td><td>定义成本分配规则</td></tr>
+            <tr><td rowspan="5">CO-IO</td><td><code>KO01</code></td><td>新建内部订单</td><td>创建订单</td></tr>
+            <tr><td><code>KO02</code></td><td>修改内部订单</td><td>调整预算/结算规则</td></tr>
+            <tr><td><code>KO8G</code></td><td>批量结算</td><td>月末批量结算一组订单</td></tr>
+            <tr><td><code>KOB1</code></td><td>订单行项目显示</td><td>查费用/收入明细</td></tr>
+            <tr><td><code>KO22</code></td><td>维护订单预算</td><td>—</td></tr>
+            <tr><td rowspan="6">CO-PC</td><td><code>CO11N</code></td><td>生产订单报工</td><td>记录完成数量/工时</td></tr>
+            <tr><td><code>CO02</code></td><td>修改生产订单</td><td>改确认/改数量</td></tr>
+            <tr><td><code>CO13</code></td><td>取消报工确认</td><td>—</td></tr>
+            <tr><td><code>COOIS</code></td><td>生产订单信息系统</td><td>导出报工报表</td></tr>
+            <tr><td><code>KKAO</code></td><td>计算WIP</td><td>算在制品价值</td></tr>
+            <tr><td><code>KKS1</code></td><td>计算差异</td><td>对比实际与标准成本</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源：SAP FICO常用事务码分类汇总<sup><a href="#cite-23">[23]</a></sup>；FI模块常用T-CODE<sup><a href="#cite-33">[33]</a></sup>。</p>
+    </section>
+
     <section id="errors">
       <h2>常见报错与排查</h2>
       <div class="table-wrap">
@@ -363,6 +690,26 @@ graph TD
         <li id="cite-11"><span class="src-title">壹沓帮助中心-如何处理无法拾取SAP元素的问题？, 拾取失败应对。</span><a href="https://doc.1datatech.net/robot/" target="_blank" rel="noopener">https://doc.1datatech.net/robot/</a></li>
         <li id="cite-12"><span class="src-title">SAP开启录制与回放功能, 原生录制步骤与T-Code说明。</span><a href="https://blog.csdn.net/qq_34276316/article/details/135078992" target="_blank" rel="noopener">https://blog.csdn.net/qq_34276316/article/details/135078992</a></li>
         <li id="cite-13"><span class="src-title">影刀社区-如何修改SAP表格内容, 读取SAP表格与桌面软件自动化指令。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=811399114915061760" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=811399114915061760</a></li>
+        <li id="cite-14"><span class="src-title">影刀RPA官方文档：SAP自动化配置（RZ11参数、客户端启用脚本、模态对话框、100% DPI）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/710737902308896768" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/710737902308896768</a></li>
+        <li id="cite-15"><span class="src-title">影刀RPA官方文档：选中树节点(sap)指令（节点路径如"SAP菜单/会计核算/控制"）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/711515410511413248" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/711515410511413248</a></li>
+        <li id="cite-16"><span class="src-title">影刀RPA官方文档：点击工具栏按钮(sap)指令（按钮名如过账/保存/执行）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/757849808331407360" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/757849808331407360</a></li>
+        <li id="cite-17"><span class="src-title">影刀RPA官方文档：导出表格(SAP)指令（SAPGUIGridView右键电子表格导出Excel）。</span><a href="https://www.yingdao.com/yddoc/rpa/zh-CN/711824183000510464" target="_blank" rel="noopener">https://www.yingdao.com/yddoc/rpa/zh-CN/711824183000510464</a></li>
+        <li id="cite-18"><span class="src-title">利用RPA实现SAP自动入账（猿急送案例），Scripting Tracker录制法。</span><a href="https://www.yuanjisong.com/conproduction/220856" target="_blank" rel="noopener">https://www.yuanjisong.com/conproduction/220856</a></li>
+        <li id="cite-19"><span class="src-title">影刀社区-如何在SAP中做总账预制凭证（FB01/FB50）。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=983299416678555648" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=983299416678555648</a></li>
+        <li id="cite-20"><span class="src-title">SAP FI系列(015)-手工录入会计凭证（FB01抬头/行项目/posting key）。</span><a href="https://blog.csdn.net/stone0823/article/details/105915077" target="_blank" rel="noopener">https://blog.csdn.net/stone0823/article/details/105915077</a></li>
+        <li id="cite-21"><span class="src-title">效率翻倍,错误归零:影刀RPA如何重塑制造业财务共享中心（银企对账4h→15min）。</span><a href="https://www.yingdao.com/encyclopedia/detail?uuid=887991229209202688" target="_blank" rel="noopener">https://www.yingdao.com/encyclopedia/detail?uuid=887991229209202688</a></li>
+        <li id="cite-22"><span class="src-title">年终财务关账:如何利用RPA应对海量数据处理与对账压力（8200条流水对账）。</span><a href="https://www.yingdao.com/encyclopedia/detail?uuid=897328945710612480" target="_blank" rel="noopener">https://www.yingdao.com/encyclopedia/detail?uuid=897328945710612480</a></li>
+        <li id="cite-23"><span class="src-title">SAP FICO常用事务码分类汇总（FI-GL/AP/AR/AA + CO-CCA/IO/PC）。</span><a href="https://blog.csdn.net/qq_37515544/article/details/154393143" target="_blank" rel="noopener">https://blog.csdn.net/qq_37515544/article/details/154393143</a></li>
+        <li id="cite-24"><span class="src-title">影刀社区-SAP导出表格指令之无法导出Excel的问题（ALV弹窗处理）。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=0492bd36-f8de-4a47-9ea6-189d82ef7320" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=0492bd36-f8de-4a47-9ea6-189d82ef7320</a></li>
+        <li id="cite-25"><span class="src-title">影刀社区-从OA系统提取结算单号后核对SAP系统与电子发票明细。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=924450565726318592" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=924450565726318592</a></li>
+        <li id="cite-26"><span class="src-title">AS01 in SAP How to Create an Asset（资产分类/公司代码/General/Time Dependent标签）。</span><a href="https://sapficoblog.com/as01-in-sap-how-to-create-an-asset/" target="_blank" rel="noopener">https://sapficoblog.com/as01-in-sap-how-to-create-an-asset/</a></li>
+        <li id="cite-27"><span class="src-title">SAP Simple Finance Create an Asset（Tutorialspoint）。</span><a href="https://www.tutorialspoint.com/sap_simple_finance/sap_simple_finance_create_an_asset.htm" target="_blank" rel="noopener">https://www.tutorialspoint.com/sap_simple_finance/sap_simple_finance_create_an_asset.htm</a></li>
+        <li id="cite-28"><span class="src-title">SAP S/4HANA FICO:手工银行对账实战与电子银行对账单入门（FF67/EBS）。</span><a href="https://www.yesdotnet.com/archive/sap-s4hana-mm-2025/829207587647557.html" target="_blank" rel="noopener">https://www.yesdotnet.com/archive/sap-s4hana-mm-2025/829207587647557.html</a></li>
+        <li id="cite-29"><span class="src-title">【学习笔记】CO内部订单（KO01创建/结算规则/KO8G批量结算）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/115432573" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/115432573</a></li>
+        <li id="cite-30"><span class="src-title">SAP设备维护—维护工单的结算（KO88/KO8G/结算结构配置）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/134128157" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/134128157</a></li>
+        <li id="cite-31"><span class="src-title">SAP生产订单报工、取消报工和查询报工操作讲解（CO11N/CO13/COOIS）。</span><a href="https://developer.cloud.tencent.cn/news/1332423" target="_blank" rel="noopener">https://developer.cloud.tencent.cn/news/1332423</a></li>
+        <li id="cite-32"><span class="src-title">【PP操作手册】成品入库和订单报工（CO11N自动收货/工序确认）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/81394601" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/81394601</a></li>
+        <li id="cite-33"><span class="src-title">FI模块所有常用T-CODE（博客园，FB01/FBL1N/FBL5N/FF67等）。</span><a href="https://www.cnblogs.com/sap-ronny/articles/9047804.html" target="_blank" rel="noopener">https://www.cnblogs.com/sap-ronny/articles/9047804.html</a></li>
       </ol>
     </div>
   </div>
