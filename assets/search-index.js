@@ -58,6 +58,7 @@ const SEARCH_INDEX = [
   { p: "sap.html", a: "fico-cases", s: "案例5 成本中心", t: "SAP成本中心主数据批量维护KS01/KS02流程图", y: "流程图" },
   { p: "sap.html", a: "fico-cases", s: "案例6 内部订单", t: "SAP内部订单批量创建与结算KO01/KO8G流程图", y: "流程图" },
   { p: "sap.html", a: "fico-cases", s: "案例7 生产报工", t: "SAP生产订单工单确认与报工CO11N/CO02流程图", y: "流程图" },
+  { p: "sap.html", a: "fico-cases", s: "案例8 标准成本滚算", t: "批量滚算制造件及半成品标准价格CK11N/CK24流程图（状态机KA→VO→FR）", y: "流程图" },
   { p: "sap.html", a: "fico-cases", s: "事务码速查表", t: "SAP CO/FI常用事务码速查表：FI-GL/AP/AR/AA/BL + CO-CCA/IO/PC", y: "表格" },
   { p: "sap.html", a: "errors", s: "常见报错", t: "SAP自动化常见报错与排查表", y: "表格" },
   { p: "sap.html", a: "pitfalls", s: "踩坑提示", t: "SAP自动化9条踩坑提示与核心路径", y: "标题" }

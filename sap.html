@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>影刀操作SAP | 影刀RPA 教程</title>
-  <meta name="description" content="影刀RPA 操作SAP：SAP GUI Scripting启用、元素拾取策略、登录/事务码/ALV表格/录制回放、采购订单ME21N批量创建实战、财务CO/FI模块7大案例（凭证/对账/资产/银行/成本中心/内部订单/报工）、常用事务码速查表、常见报错与踩坑。">
-  <meta name="keywords" content="影刀SAP,影刀RPA SAP,SAP GUI Scripting,ME21N,采购订单自动化,SAP自动化,SAP CO,SAP FI,FB01,FBL1N,AS01,FF67,KS01,KO01,CO11N,财务自动化">
+  <meta name="description" content="影刀RPA 操作SAP：SAP GUI Scripting启用、元素拾取策略、登录/事务码/ALV表格/录制回放、采购订单ME21N批量创建实战、财务CO/FI模块8大案例（凭证/对账/资产/银行/成本中心/内部订单/报工/标准成本滚算CK11N/CK24）、常用事务码速查表、常见报错与踩坑。">
+  <meta name="keywords" content="影刀SAP,影刀RPA SAP,SAP GUI Scripting,ME21N,采购订单自动化,SAP自动化,SAP CO,SAP FI,FB01,FBL1N,AS01,FF67,KS01,KO01,CO11N,CK11N,CK24,标准成本滚算,财务自动化">
   <meta property="og:title" content="影刀RPA 操作SAP">
-  <meta property="og:description" content="SAP GUI Scripting启用、元素拾取策略、采购订单批量创建、财务CO/FI模块7大案例">
+  <meta property="og:description" content="SAP GUI Scripting启用、元素拾取策略、采购订单批量创建、财务CO/FI模块8大案例（含标准成本滚算CK11N/CK24）">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="assets/styles.css?v=20261010a">
 </head>
@@ -41,19 +41,19 @@
   <main class="docs-main">
     <div class="crumb"><a href="index.html">首页</a><span class="sep">/</span><span>影刀操作SAP</span></div>
     <h1 class="page-title">影刀 RPA 操作 SAP</h1>
-    <p class="page-subtitle">不用学 ABAP 也能操控 ERP · SAP GUI Scripting 启用、元素拾取策略、采购订单批量创建与财务 CO/FI 模块 7 大实战案例</p>
+    <p class="page-subtitle">不用学 ABAP 也能操控 ERP · SAP GUI Scripting 启用、元素拾取策略、采购订单批量创建与财务 CO/FI 模块 8 大实战案例（含标准成本滚算 CK11N/CK24）</p>
     <div class="page-meta">
       <span class="meta-tag accent">企业级场景</span>
       <span class="meta-tag">4 大难点</span>
       <span class="meta-tag">含拾取策略对比</span>
-      <span class="meta-tag">8 个实战案例</span>
+      <span class="meta-tag">9 个实战案例</span>
     </div>
 
     <div class="stats-strip">
       <div class="stat"><div class="num">4</div><div class="lbl">自动化难点</div></div>
       <div class="stat"><div class="num">4</div><div class="lbl">拾取策略</div></div>
-      <div class="stat"><div class="num">8</div><div class="lbl">实战案例</div></div>
-      <div class="stat"><div class="num">35+</div><div class="lbl">常用事务码</div></div>
+      <div class="stat"><div class="num">9</div><div class="lbl">实战案例</div></div>
+      <div class="stat"><div class="num">37+</div><div class="lbl">常用事务码</div></div>
     </div>
 
     <section id="overview">
@@ -578,6 +578,60 @@ flowchart TD
         <p>⚠️ <strong>取消报工用 CO13</strong>：报工错误须 CO13 取消原确认再重报，不能直接 CO02 改数量。</p>
       </div>
 
+      <h3>案例8：批量滚算制造件及半成品标准价格（CK11N/CK24）<span class="meta-tag accent" style="font-size:.75em">CO-PC</span></h3>
+      <p><strong>场景</strong>：制造企业月初需对所有自制半成品和产成品执行标准成本滚算并发布。物料数百至上千种，人工逐个在 CK11N 估算（基于 BOM 展开+工艺路线+作业价格计算标准成本），再在 CK24 批量标记发布，耗时数天且极易遗漏，导致当月存货计价和差异分析不准<sup><a href="#cite-34">[34]</a></sup><sup><a href="#cite-35">[35]</a></sup>。</p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+flowchart TD
+    A[读取物料清单Excel:物料号/工厂/估值日期] --> B[登录SAP]
+    B --> C[循环每个物料]
+    C --> D[执行CK11N输入物料号+工厂+成本核算变式]
+    D --> E[填写日期:成本核算日期/估值日期]
+    E --> F[点击执行→BOM展开+工艺路线评估+价格取数]
+    F --> G{估算状态}
+    G -->|KA 估算完成无错| H[保存估算→提取估算ID+标准成本]
+    G -->|KF 有错| X[记录错误原因:缺BOM/缺工艺路线/缺作业价格]
+    H --> I[写回Excel:估算ID/标准成本/状态]
+    X --> I
+    I --> J{是否还有物料}
+    J -->|是| D
+    J -->|否| K[执行CK24批量标记]
+    K --> L[输入工厂+物料范围+估值视图+目标期间]
+    L --> M[测试运行→检查日志无E类错误]
+    M --> N[正式标记→状态KA→VO]
+    N --> O[执行CK24发布:测试→正式→状态VO→FR]
+    O --> P[MM03验证:当前标准价已更新]
+    P --> Q[输出执行报告:成功/失败/缺失BOM清单]
+        </div>
+        <p class="diagram-caption">图：批量滚算制造件及半成品标准价格流程</p>
+      </div>
+
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>CK11N</code>：物料标准成本估算。抬头字段：<code>物料号(Material)</code>、<code>工厂(Plant)</code>、<code>成本核算变式(CostingVariant, 如PPC1/ZPC1)</code>、<code>成本核算批量(CostingLotSize)</code>；日期视图：<code>成本核算起始日(必填≥当前日期)</code>、<code>估值日期(ValuationDate)</code>、<code>数量结构日期</code><sup><a href="#cite-36">[36]</a></sup>。</li>
+        <li><code>CK24</code>：标记与发布标准价格。字段：<code>工厂</code>、<code>物料范围</code>、<code>公司代码</code>、<code>成本核算变式</code>、<code>估值视图(法定/集团)</code>、<code>过账年度/期间(一般下一期间)</code><sup><a href="#cite-34">[34]</a></sup>。</li>
+        <li><code>CK13N</code>：成本估算明细查看；<code>CKR1</code>：删除已标记/发布的估算（重算前必须删除）；<code>MM03</code>：验证成本视图（当前标准价/将来价格）；<code>CKMPCD</code>：价格变动凭证<sup><a href="#cite-37">[37]</a></sup>。</li>
+        <li>批量替代：<code>CK40N</code>（6步：选择物料→结构展开→成本核算→结果分析→标记→发布），S/4HANA 批量标准价估算推荐用 CK40N 替代逐个 CK11N<sup><a href="#cite-38">[38]</a></sup>。</li>
+        <li>成本估算状态码：<code>KA</code>(估算完成无错)→<code>VO</code>(已标记)→<code>FR</code>(已发布无错，标准价已写入物料主数据)，已到 FR 状态不可重复估算<sup><a href="#cite-39">[39]</a></sup>。</li>
+      </ul>
+
+      <div class="callout warning">
+        <p>⚠️ <strong>前置条件检查</strong>：CK11N 估算前必须确认 BOM(CS01)、工艺路线(CA01)、成本中心作业价格(KP26) 已维护，缺一即报错。影刀循环前可先用 CS12 批量检查 BOM 有效性<sup><a href="#cite-34">[34]</a></sup>。</p>
+        <p>⚠️ <strong>估值日期必须 ≥ 当前日期</strong>：成本核算起始日不能晚于当前日期否则系统报错；过账期间一般是下一会计期间（新标准价生效期间）<sup><a href="#cite-35">[35]</a></sup>。</p>
+        <p>⚠️ <strong>当期已发布不可重算</strong>：已到 FR 状态的物料再跑 CK11N 报错，必须先 <code>CKR1</code> 删除评估才能重算<sup><a href="#cite-35">[35]</a></sup>。</p>
+        <p>⚠️ <strong>当期已有实际业务无法改价</strong>：一旦本月该物料有实际业务发生（库存移动/生产收货），无法发布/更改标准单价，月结窗口期非常窄<sup><a href="#cite-35">[35]</a></sup>。</p>
+        <p>⚠️ <strong>发布产生 FI 凭证</strong>：有库存时 <code>(新价−旧价)×库存数量</code> 自动过账，影刀需预校验库存避免误发布产生大额凭证<sup><a href="#cite-35">[35]</a></sup>。</p>
+        <p>⚠️ <strong>CK24 测试运行先行</strong>：标记/发布前必须先 Test Run 检查无 E 类错误再正式运行，发布后不可回退<sup><a href="#cite-34">[34]</a></sup>。</p>
+        <p>⚠️ <strong>成本核算变式配置</strong>：OKKN 中评估变式需添加"来自信息记录的价格"，否则外购物料价格取不到<sup><a href="#cite-40">[40]</a></sup>。</p>
+        <p>⚠️ <strong>优先用 CK40N 批量</strong>：CK11N 是单物料事务码，大批量估算优先用 CK40N 批量事务码+GUI 自动化，估算失败的物料再用 CK11N 逐个补跑并处理弹窗<sup><a href="#cite-38">[38]</a></sup><sup><a href="#cite-41">[41]</a></sup>。</p>
+      </div>
+
+      <div class="callout success">
+        <p><strong>状态机驱动流程</strong>：以 KA→VO→FR 状态码作为流程跳转和异常分支依据。估算成功(KA)→标记(VO)→发布(FR)→MM03验证当前价=将来价。失败物料写入异常队列单独补跑<sup><a href="#cite-39">[39]</a></sup>。</p>
+        <p><strong>CKMLCP 不可替代</strong>：CKMLCP 是月末物料分类账实际成本核算（差异分摊），与期初标准价估算（CK11N/CK40N）是不同环节，不能替代<sup><a href="#cite-42">[42]</a></sup>。</p>
+      </div>
+
       <h3>SAP CO/FI 常用事务码速查表</h3>
       <div class="table-wrap">
         <table>
@@ -612,12 +666,14 @@ flowchart TD
             <tr><td><code>KO8G</code></td><td>批量结算</td><td>月末批量结算一组订单</td></tr>
             <tr><td><code>KOB1</code></td><td>订单行项目显示</td><td>查费用/收入明细</td></tr>
             <tr><td><code>KO22</code></td><td>维护订单预算</td><td>—</td></tr>
-            <tr><td rowspan="6">CO-PC</td><td><code>CO11N</code></td><td>生产订单报工</td><td>记录完成数量/工时</td></tr>
+            <tr><td rowspan="8">CO-PC</td><td><code>CO11N</code></td><td>生产订单报工</td><td>记录完成数量/工时</td></tr>
             <tr><td><code>CO02</code></td><td>修改生产订单</td><td>改确认/改数量</td></tr>
             <tr><td><code>CO13</code></td><td>取消报工确认</td><td>—</td></tr>
             <tr><td><code>COOIS</code></td><td>生产订单信息系统</td><td>导出报工报表</td></tr>
             <tr><td><code>KKAO</code></td><td>计算WIP</td><td>算在制品价值</td></tr>
             <tr><td><code>KKS1</code></td><td>计算差异</td><td>对比实际与标准成本</td></tr>
+            <tr><td><code>CK11N</code></td><td>物料标准成本估算</td><td>BOM展开+工艺路线+作业价格计算标准成本</td></tr>
+            <tr><td><code>CK24</code></td><td>标记/发布标准价格</td><td>批量标记将来价格→发布当前标准价</td></tr>
           </tbody>
         </table>
       </div>
@@ -710,6 +766,15 @@ flowchart TD
         <li id="cite-31"><span class="src-title">SAP生产订单报工、取消报工和查询报工操作讲解（CO11N/CO13/COOIS）。</span><a href="https://developer.cloud.tencent.cn/news/1332423" target="_blank" rel="noopener">https://developer.cloud.tencent.cn/news/1332423</a></li>
         <li id="cite-32"><span class="src-title">【PP操作手册】成品入库和订单报工（CO11N自动收货/工序确认）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/81394601" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/81394601</a></li>
         <li id="cite-33"><span class="src-title">FI模块所有常用T-CODE（博客园，FB01/FBL1N/FBL5N/FF67等）。</span><a href="https://www.cnblogs.com/sap-ronny/articles/9047804.html" target="_blank" rel="noopener">https://www.cnblogs.com/sap-ronny/articles/9047804.html</a></li>
+        <li id="cite-34"><span class="src-title">SAP FICO标准价格估算（CK11N/CK24全流程：抬头字段/日期视图/标记发布步骤/OKKN配置）。</span><a href="https://blog.csdn.net/qq_55411102/article/details/143184629" target="_blank" rel="noopener">https://blog.csdn.net/qq_55411102/article/details/143184629</a></li>
+        <li id="cite-35"><span class="src-title">利用CK11N改标准价格需要注意的地方（估值日期限制/当期已发布不可重算/CKR1删除/价格变动FI凭证）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/46324559" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/46324559</a></li>
+        <li id="cite-36"><span class="src-title">Create Material Cost Estimate (CK11N) 完整屏幕流程与字段说明（sineit）。</span><a href="http://www.sineit.net/Transactions/Finance/content/ck11n%20-%20create%20material%20cost%20estimate/cc/html/index.htm" target="_blank" rel="noopener">http://www.sineit.net/Transactions/Finance/content/ck11n%20-%20create%20material%20cost%20estimate/cc/html/index.htm</a></li>
+        <li id="cite-37"><span class="src-title">SAP案例教程CO成本会计前台操作（CK11N成本构成/BOM树状展开/成本组件结构示例）。</span><a href="https://blog.csdn.net/erplabs/article/details/103862113" target="_blank" rel="noopener">https://blog.csdn.net/erplabs/article/details/103862113</a></li>
+        <li id="cite-38"><span class="src-title">【实用】批量成本估算CK40N（6步流程：选择→展开→核算→分析→标记→发布）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/115216821" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/115216821</a></li>
+        <li id="cite-39"><span class="src-title">SAP成本估算状态详解（KA→VO→FR状态码体系，已发布不可重算）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/52671172" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/52671172</a></li>
+        <li id="cite-40"><span class="src-title">SAP标准成本滚算小记（博客园，OKKN评估变式添加信息记录价格）。</span><a href="https://www.cnblogs.com/saper/p/7183738.html" target="_blank" rel="noopener">https://www.cnblogs.com/saper/p/7183738.html</a></li>
+        <li id="cite-41"><span class="src-title">【业务案例】价值3w的SAP开发总结——成本滚算BAPI方案踩坑（CK_F_MATERIAL_CALC批量崩溃/跳前台弹窗）。</span><a href="https://blog.csdn.net/LilySesy/article/details/144658179" target="_blank" rel="noopener">https://blog.csdn.net/LilySesy/article/details/144658179</a></li>
+        <li id="cite-42"><span class="src-title">CKMLCP实际成本核算（月末物料分类账差异分摊，不可替代CK11N/CK24）。</span><a href="https://blog.csdn.net/zhongguomao/article/details/52892741" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/52892741</a></li>
       </ol>
     </div>
   </div>
