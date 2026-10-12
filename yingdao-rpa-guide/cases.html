@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>实战案例 | 影刀RPA 教程</title>
-  <meta name="description" content="影刀RPA 实战案例：Excel批量数据处理、网页数据采集电商比价、邮件自动发送+系统录入、OA流程批量下载发票合同归档四大真实案例，含指令分类表与通用报错速查。">
-  <meta name="keywords" content="影刀RPA实战,影刀Excel自动化,影刀网页采集,影刀电商比价,影刀邮件,影刀OA下载发票合同">
-  <meta property="og:title" content="影刀RPA 实战案例">
+  <title>实战案例 | RPA软件使用教程</title>
+  <meta name="description" content="蓝印RPA实战案例：Excel批量数据处理、网页数据采集电商比价、邮件自动发送+系统录入、OA流程批量下载发票合同归档四大真实案例，含指令分类表与通用报错速查。">
+  <meta name="keywords" content="蓝印RPA实战,RPA Excel自动化,蓝印网页采集,蓝印电商比价,蓝印邮件,蓝印OA下载发票合同">
+  <meta property="og:title" content="RPA 实战案例">
   <meta property="og:description" content="四大真实案例：Excel批量处理、网页采集、邮件+录入、OA下载归档">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="assets/styles.css?v=20261010a">
+  <link rel="stylesheet" href="assets/styles.css?v=20261010c">
 </head>
 <body>
 
@@ -18,7 +18,7 @@
 <nav class="topnav">
   <div class="topnav-inner">
     <button class="topnav-toggle" aria-label="打开导航菜单" onclick="setTopNav(true)">☰</button>
-    <a class="brand" href="index.html"><span class="logo-dot"></span>影刀RPA 教程</a>
+    <a class="brand" href="index.html"><span class="logo-dot"></span>RPA 使用教程</a>
     <nav class="topnav-links" aria-label="专栏导航">
       <a href="index.html">首页</a>
       <a href="basics.html">基础使用</a>
@@ -56,28 +56,33 @@
     </div>
 
     <section id="commands">
-      <h2>影刀指令分类速查</h2>
-      <p>影刀指令面板有数百条指令，按场景归类。核心概念四个：<strong>应用</strong>（最大容器）、<strong>指令</strong>（流程每一步）、<strong>元素库</strong>（网页元素定位存储，页面改版只需重捕获一个）、<strong>数据表</strong>（内存二维表，采集中转站）<sup><a href="#cite-1">[1]</a></sup>。</p>
+      <h2>蓝印RPA指令分类速查</h2>
+      <p>蓝印指令面板按场景归类为 <strong>16 大类</strong>。核心概念：<strong>流程/应用</strong>（最大容器，可打包EXE）、<strong>指令</strong>（流程每一步）、<strong>元素/xpath路径</strong>（网页元素定位）、<strong>变量</strong>（自定义变量，任意类型）<sup><a href="#cite-1">[1]</a></sup>。</p>
       <div class="table-wrap">
         <table>
           <thead><tr><th>大类</th><th>下属指令</th><th>作用</th></tr></thead>
           <tbody>
-            <tr><td>① 网页自动化</td><td>打开/关闭网页、刷新、前进后退、切换标签页/iframe、执行JS、等待加载</td><td>90%时间与网页交互；打开网页务必保存"网页对象"变量供后续指令使用</td></tr>
-            <tr><td>② 元素操作</td><td>点击、输入文本、获取文本/属性、判断存在、等待出现/消失、获取相似元素列表、鼠标悬停</td><td>四套定位：默认捕获/XPath/CSS/正则；复杂页面用XPath的contains</td></tr>
-            <tr><td>③ 流程控制</td><td>如果/否则、条件循环while、遍历列表forEach、跳出/继续、退出、Try/Catch/Finally</td><td>条件可组合(与/或/非)；循环务必设退出条件防死循环</td></tr>
-            <tr><td>④ 变量与数据</td><td>设置变量、全局变量、列表操作(增删查)、字典操作(键值对)</td><td>列表用索引取值，字典用key取值</td></tr>
-            <tr><td>⑤ 数据处理</td><td>读取/写入Excel、写入单元格、导出表格、清空、读取CSV、JSON解析、内容替换、删除重复行、筛选</td><td>读取Excel返回二维列表；大数量用区域写入比逐格写快一个数量级</td></tr>
-            <tr><td>⑥ 文件操作</td><td>遍历文件夹、文件存在、创建/复制/移动/重命名/删除、读写文本文件</td><td>—</td></tr>
-            <tr><td>⑦ 系统与工具</td><td>固定等待、获取当前时间、打开程序、运行命令行、截屏、剪贴板、HTTP请求</td><td>HTTP请求可调API绕过网页操作，稳定性更高</td></tr>
-            <tr><td>⑧ 邮件自动化</td><td>发送邮件(SMTP，支持多收件人/抄送/密送/附件/HTML正文)</td><td>需配置SMTP服务器+授权码（非登录密码）</td></tr>
-            <tr><td>⑨ 鼠标键盘/图像</td><td>鼠标点击/移动、键盘输入、图像识别、OCR文字识别</td><td>网页元素定位不了时的兜底方案；验证码识别准确率有限</td></tr>
-            <tr><td>⑩ AI/魔法指令</td><td>魔法指令(自然语言生成代码)、智能识别</td><td>每周有免费额度；适合非标组件（智能日期选择器等）</td></tr>
-            <tr><td>⑪ 通知/系统联动</td><td>飞书群通知、钉钉/企微通知、定时触发器/高级任务计划(Cron)</td><td>机器人webhook地址+签名校验密钥</td></tr>
-            <tr><td>⑫ 进阶(需点亮Python)</td><td>Python代码、Pandas、Requests、正则、Selenium、ADB(手机)</td><td>影刀内置Python环境无需安装</td></tr>
+            <tr><td>① 浏览器操作</td><td>加载URL、打开网页、新建标签页、关闭浏览器、处理JS弹窗</td><td>蓝印内置浏览器（基于Chromium），网页自动化核心</td></tr>
+            <tr><td>② 鼠标操作</td><td>点击坐标、移动、拖拽、滚轮、获取元素坐标、移动轨迹</td><td>桌面应用操作兜底（蓝印无桌面UI元素拾取）</td></tr>
+            <tr><td>③ 元素操作</td><td>xpath点击、css选择器点击、填写输入框、获取/设置属性、相似元素个数</td><td>蓝印以xpath为主定位网页元素；相似元素+For循环批量采集</td></tr>
+            <tr><td>④ 页面操作</td><td>滚动、执行JS、上传附件、下载文件、页面截图、随机点击链接</td><td>下载文件设固定路径避免弹窗</td></tr>
+            <tr><td>⑤ 输入操作</td><td>输入文字、发送键盘消息、批量输入</td><td>—</td></tr>
+            <tr><td>⑥ 网页设置</td><td>cookie、代理、UserAgent、屏幕尺寸、触屏、GPS、陀螺仪</td><td>可设置代理IP反爬</td></tr>
+            <tr><td>⑦ 数据过滤与监听</td><td>重定向URL、监听网页请求与结果、等待监听、清空监听数据</td><td>监听API请求直接抓数据绕过页面解析</td></tr>
+            <tr><td>⑧ 数据操作</td><td>保存/读取本地文本、获取网址/标题/cookie/网页内容、获取文件夹文件</td><td>—</td></tr>
+            <tr><td>⑨ 系统操作</td><td>运行本地程序、删除文件、剪切板、播放音频</td><td>蓝印桌面自动化能力较弱</td></tr>
+            <tr><td>⑩ 流程控制</td><td>IF条件、For循环次数、退出循环、终止/暂停流程</td><td>条件可组合；循环务必设退出条件</td></tr>
+            <tr><td>⑪ 等待操作</td><td>等待页面加载、延迟等待、等待元素、等待监听数据</td><td>替代固定等待，更稳定</td></tr>
+            <tr><td>⑫ Excel表格</td><td>导入、获取数据/行数、For循环表格、存到/打开/另存/关闭/读取/写入</td><td>蓝印无独立"数据表"对象，表格数据通过Excel指令直接读写</td></tr>
+            <tr><td>⑬ 定时操作</td><td>定时器、关闭定时器</td><td>定时器为流程内异步执行；应用级定时需标准版起</td></tr>
+            <tr><td>⑭ 数据处理</td><td>文本提取、当前时间、时间对象、文本与JSON互转、自定义变量、打印日志、变量赋值</td><td>变量任意类型，根据值自动判断</td></tr>
+            <tr><td>⑮ 网络操作</td><td>http请求</td><td>HTTP请求可调API绕过网页操作，稳定性更高</td></tr>
+            <tr><td>⑯ 对话框</td><td>输入对话框、选择文件/文件夹对话框、信息提示框</td><td>—</td></tr>
+            <tr><td>扩展</td><td>OCR识别图中文字、载入Python文件、自定义指令（可分享/导入）</td><td>蓝印支持载入Python文件扩展能力</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="callout"><p><strong>新手最易忽略的5个指令：</strong>① 判断元素是否存在（弹窗/登录态检测）② 等待元素出现（替代固定等待）③ 获取相似元素列表（批量采集神器）④ Try/Catch（异常容错）⑤ 切换框架iframe（元素捕获了却点不到，99%是没切iframe）<sup><a href="#cite-1">[1]</a></sup>。</p></div>
+      <div class="callout"><p><strong>新手最易忽略的5个指令：</strong>① 等待元素（替代固定延迟，更稳定）② 获取相似元素个数+For循环（批量采集神器）③ 校验元素（检查xpath是否有效）④ 数据监听（直接抓API返回数据绕过页面解析）⑤ 定时器（流程内异步执行不阻塞主流程）<sup><a href="#cite-1">[1]</a></sup>。</p></div>
     </section>
 
     <section id="case-excel">
@@ -114,8 +119,8 @@ graph TD
         <li><strong>保存关闭</strong>：勾选保存。</li>
       </ol>
 
-      <h3>涉及的影刀指令</h3>
-      <p><strong>Excel类</strong>：启动Excel、读取Excel内容、写入Excel内容、写入单元格值、内容替换、删除重复行、筛选、关闭Excel（Excel + Excel扩展指令集）<sup><a href="#cite-3">[3]</a></sup>；<strong>流程控制</strong>：遍历列表、如果/否则；<strong>进阶</strong>：Python代码块（复杂清洗，可直接读写影刀变量）。</p>
+      <h3>涉及的蓝印指令</h3>
+      <p><strong>Excel表格类</strong>：导入Excel、获取数据/行数、For循环表格、写入单元格、存到/另存（Excel表格指令集）<sup><a href="#cite-3">[3]</a></sup>；<strong>流程控制</strong>：IF条件、For循环次数；<strong>数据处理</strong>：文本提取、变量赋值、文本与JSON互转（复杂清洗可用载入Python文件扩展）。</p>
 
       <h3>踩坑提示</h3>
       <div class="callout warning">
@@ -131,7 +136,7 @@ graph TD
     <section id="case-web">
       <h2>案例2：网页数据采集（电商比价）</h2>
       <h3>适用场景</h3>
-      <p>采集电商平台商品标题、价格、销量、店铺名，多页翻页采集，写入Excel做比价分析。也适用：B站数据采集、公众号文章采集、招聘网站薪资统计等<sup><a href="#cite-5">[5]</a></sup>。影刀优势在"需要登录态、要模拟真人操作、页面结构复杂、交付给业务岗自己跑"的场景。</p>
+      <p>采集电商平台商品标题、价格、销量、店铺名，多页翻页采集，写入Excel做比价分析。也适用：B站数据采集、公众号文章采集、招聘网站薪资统计等<sup><a href="#cite-5">[5]</a></sup>。蓝印优势在"内置浏览器+xpath拾取+代理设置+数据监听"的网页采集场景。</p>
 
       <h3>整体流程</h3>
       <figure class="diagram">
@@ -154,7 +159,7 @@ graph TD
 
       <h3>关键步骤</h3>
       <ol class="steps">
-        <li><strong>安装浏览器插件</strong>：主界面右上角→扩展→安装Chrome扩展；装完确认已启用；影刀浏览器与系统Chrome不能同时运行（会冲突）。</li>
+        <li><strong>使用蓝印内置浏览器</strong>：蓝印内置Chromium浏览器，无需额外安装插件，直接在指令中选择内置浏览器即可。</li>
         <li><strong>打开网页</strong>：「打开网页」浏览器选Chrome，网址填目标URL，<strong>保存网页对象至变量</strong> <code>web_page</code>（后续所有指令靠它）。</li>
         <li><strong>登录态检测</strong>：<code>if not browser.wait_appear('用户头像', timeout=5): raise Exception('未登录')</code>——拼多多搜索必须登录，否则几页后跳验证码。</li>
         <li><strong>等待商品列表加载</strong>：「等待元素(web)」等商品标题出现，超时给15秒，比固定等待更可靠。</li>
@@ -285,8 +290,8 @@ flowchart TD
         <li><strong>定位附件区并判断有无附件</strong>：「判断元素是否存在」检查附件区是否有文件链接；无附件则走异常分支，标记"无附件"写回清单，跳过下载。</li>
         <li><strong>遍历附件逐个下载</strong>：「获取相似元素列表」取全部附件链接 → 循环「点击元素」触发下载。浏览器下载需配置：<br>
           <ul>
-            <li>影刀浏览器设置下载路径为固定目录（如 <code>D:\OA下载临时区</code>），避免每次弹"另存为"</li>
-            <li>Chrome 需「关闭浏览器下载确认弹窗」或用影刀浏览器静默下载</li>
+            <li>蓝印浏览器设置下载路径为固定目录（如 <code>D:\OA下载临时区</code>），避免每次弹"另存为"</li>
+            <li>Chrome 需「关闭浏览器下载确认弹窗」或用蓝印内置浏览器静默下载</li>
             <li>每次点击后「固定等待」2-3秒等下载启动，并轮询临时目录文件数变化确认下载完成</li>
           </ul>
         </li>
@@ -296,7 +301,7 @@ flowchart TD
         <li><strong>输出清单并通知</strong>：循环结束后保存清单Excel，可用「发送邮件」附清单发财务，或「飞书群通知」发送完成消息<sup><a href="#cite-9">[9]</a></sup>。</li>
       </ol>
 
-      <h3>涉及的影刀指令</h3>
+      <h3>涉及的蓝印指令</h3>
       <ul>
         <li><strong>浏览器/元素</strong>：打开网页、点击元素、输入文本、获取元素文本、判断元素是否存在、等待元素出现、获取相似元素列表、切换标签页（详情可能新开Tab）</li>
         <li><strong>文件操作</strong>：创建文件夹、文件夹是否存在、遍历文件夹、移动文件、文件存在、复制文件（备份）</li>
@@ -307,7 +312,7 @@ flowchart TD
 
       <h3>踩坑提示</h3>
       <div class="callout warning">
-        <p>⚠️ <strong>下载弹窗"另存为"卡住</strong>：Chrome默认下载会弹保存对话框。用影刀浏览器并设固定下载路径关闭弹窗；或Chrome设置→下载→关闭"下载前询问保存位置"。</p>
+        <p>⚠️ <strong>下载弹窗"另存为"卡住</strong>：Chrome默认下载会弹保存对话框。用蓝印内置浏览器并设固定下载路径关闭弹窗；或Chrome设置→下载→关闭"下载前询问保存位置"。</p>
         <p>⚠️ <strong>附件名相同覆盖</strong>：不同流程附件可能同名（都叫"发票.pdf"）。下载到临时区时加流程标题前缀，或下载后立即移动到对应文件夹避免冲突。</p>
         <p>⚠️ <strong>大文件未下载完就移动</strong>：移动时报"文件被占用"。用「文件存在」+「固定等待」轮询，或判断文件大小不再变化再移动。</p>
         <p>⚠️ <strong>流程标题含非法字符</strong>：文件夹名不能含 <code>\ / : * ? " &lt; &gt; |</code>。用Python块 <code>re.sub(r'[\\/:*?&quot;&lt;&gt;|]','_',title)</code> 清洗后再建目录。</p>
@@ -341,7 +346,7 @@ flowchart TD
 
     <nav class="page-pager" aria-label="上一篇与下一篇导航">
       <a href="basics.html" class="pager-prev"><span class="pg-label">← 上一篇</span><span class="pg-title">基础使用指南</span></a>
-      <a href="ai.html" class="pager-next"><span class="pg-label">下一篇 →</span><span class="pg-title">影刀结合AI</span></a>
+      <a href="ai.html" class="pager-next"><span class="pg-label">下一篇 →</span><span class="pg-title">RPA结合AI</span></a>
     </nav>
   </main>
 </div>
@@ -367,13 +372,13 @@ flowchart TD
       </ol>
     </div>
   </div>
-  <div class="copy">© 2026 影刀RPA 使用教程知识库 · 内容整理自公开权威资料，仅供学习参考，版权归原作者所有</div>
+  <div class="copy">© 2026 RPA软件使用教程知识库 · 内容整理自公开权威资料，仅供学习参考，版权归原作者所有</div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
-<script src="assets/search-index.js?v=20261010a" defer></script>
-<script src="assets/charts.js?v=20261010a" defer></script>
-<script src="assets/app.js?v=20261010a" defer></script>
+<script src="assets/search-index.js?v=20261010c" defer></script>
+<script src="assets/charts.js?v=20261010c" defer></script>
+<script src="assets/app.js?v=20261010c" defer></script>
 </body>
 </html>
