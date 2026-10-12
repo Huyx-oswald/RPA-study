@@ -28,6 +28,8 @@ const SEARCH_INDEX = [
   { p: "cases.html", a: "case-web-flow", s: "案例2流程", t: "网页采集流程图：打开登录获取相似元素翻页保存", y: "流程图" },
   { p: "cases.html", a: "case-mail", s: "案例3 邮件+录入", t: "自动化办公：邮件自动发送与系统数据录入", y: "标题" },
   { p: "cases.html", a: "case-mail-flow", s: "案例3流程", t: "邮件+录入流程图：定时触发登录采集汇总发邮件", y: "流程图" },
+  { p: "cases.html", a: "case-oa", s: "案例4 OA下载归档", t: "OA流程批量下载发票/合同文件并按流程名建文件夹归档", y: "标题" },
+  { p: "cases.html", a: "case-oa", s: "案例4流程", t: "OA下载归档流程图：遍历流程列表进入详情建文件夹下载附件移动归档", y: "流程图" },
   { p: "cases.html", a: "errors", s: "通用报错", t: "跨案例通用报错速查表", y: "表格" },
 
   /* ===== ai.html 结合AI ===== */
