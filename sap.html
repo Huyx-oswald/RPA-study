@@ -303,6 +303,288 @@ graph TD
       </ol>
     </section>
 
+    <section id="fico-cases">
+      <h2>财务场景实战：CO/FI 模块 8 大案例</h2>
+      <p>以下案例覆盖 SAP 财务会计（FI）与管理会计（CO）核心场景，每个案例含流程图、关键 T-Code、控件路径与踩坑提示。所有案例需使用支持桌面元素操作的 RPA（影刀/UiPath），<strong>蓝印RPA不适用</strong>。</p>
+
+      <h3>案例1：凭证批量录入与过账（FI-GL）</h3>
+      <p><strong>场景</strong>：月末需将数百条手工凭证批量录入 SAP 并过账。人工逐条 FB01/FB50 录入耗时数天，且极易借贷不平。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取凭证清单Excel] --> B[登录SAP执行FB01]
+    B --> C[循环每条凭证]
+    C --> D[填写凭证日期/类型/公司代码]
+    D --> E[循环填写行项目:科目/成本中心/金额]
+    E --> F{借贷平衡?}
+    F -->|是| G[点击保存过账]
+    F -->|否| H[标记异常跳过]
+    G --> I[获取凭证号写回Excel]
+    H --> J[写入失败清单]
+        </pre>
+        <figcaption>图：凭证批量录入与过账流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FB01</code>：过账凭证（输入日期/类型/公司代码/行项目科目/成本中心/借贷金额）</li>
+        <li><code>FB50</code>：总账凭证（简化输入界面）</li>
+        <li>状态栏 <code>wnd[0]/sbar</code>：抓取凭证号</li>
+        <li>借贷平衡检查：借方合计 = 贷方合计，否则保存报错</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>借贷不平无法保存</strong>：SAP 要求借贷必须平衡，RPA 需在保存前预校验 Excel 借贷合计<sup><a href="#cite-14">[14]</a></sup>。</p>
+        <p>⚠️ <strong>成本中心/利润中心需有效</strong>：填入无效的成本中心会弹错误对话框，需提前用 KS03 验证。</p>
+        <p>⚠️ <strong>过账期间未开</strong>：OB52 财务账期未开则报错"账期未打开"，需财务管理员先开账期。</p>
+      </div>
+
+      <h3>案例2：应收/应付对账自动化（FI-AP/AR）</h3>
+      <p><strong>场景</strong>：每月需将 SAP 应收/应付明细与银行流水或业务系统对账，人工核对 FBL1N/FBL5N 报表耗时巨大。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[执行FBL1N应付/ FBL5N应收] --> B[输入供应商/客户范围]
+    B --> C[导出ALV报表至Excel]
+    C --> D[读取银行流水Excel]
+    D --> E[按凭证号/金额匹配]
+    E --> F{匹配成功?}
+    F -->|是| G[标记已清项]
+    F -->|否| H[标记未匹配异常]
+    G --> I[执行F-44清账]
+        </pre>
+        <figcaption>图：应收/应付对账自动化流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FBL1N</code>：供应商行项目报表（应付）</li>
+        <li><code>FBL5N</code>：客户行项目报表（应收）</li>
+        <li><code>F-44</code>：清账（将匹配的凭证标记为已清）</li>
+        <li>ALV 表格导出：用"导出表格(SAP)"指令或 SAP 原生导出</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>ALV 导出格式不稳定</strong>：ALV 表格列顺序可能变化，RPA 抓取需按列名而非列序号定位<sup><a href="#cite-15">[15]</a></sup>。</p>
+        <p>⚠️ <strong>清账需逐凭证执行</strong>：F-44 一次清一个客户/供应商，需循环处理。</p>
+      </div>
+
+      <h3>案例3：资产购置与折旧自动化（FI-AA）</h3>
+      <p><strong>场景</strong>：批量创建资产主数据并执行月度折旧运行。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取资产清单Excel] --> B[循环: AS01创建资产主数据]
+    B --> C[填写资产类别/公司代码/成本中心]
+    C --> D[保存获取资产号]
+    D --> E[AS02补充折旧参数]
+    E --> F[全部创建后执行AFAB折旧运行]
+    F --> G[检查折旧日志无报错]
+    G --> H[输出资产清单]
+        </pre>
+        <figcaption>图：资产购置与折旧流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>AS01</code>：创建资产主数据（资产类别/公司代码/成本中心）</li>
+        <li><code>AS02</code>：更改资产（补充折旧开始日/使用年限）</li>
+        <li><code>AFAB</code>：折旧运行（批量计算当月折旧）</li>
+        <li><code>AS03</code>：显示资产（验证）</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>资产号自动生成</strong>：AS01 保存后系统自动生成资产号，需从状态栏抓取<sup><a href="#cite-16">[16]</a></sup>。</p>
+        <p>⚠️ <strong>AFAB 折旧运行报错</strong>：资产主数据不完整（缺折旧参数）会导致 AFAB 报错，需先检查日志修复再重跑。</p>
+      </div>
+
+      <h3>案例4：银行对账单导入与清账（FI-BL）</h3>
+      <p><strong>场景</strong>：将银行电子对账单导入 SAP 并自动匹配清账。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取银行流水MT940文件] --> B[执行FF67导入对账单]
+    B --> C[填写银行账户/对账单日期]
+    C --> D[逐行录入明细]
+    D --> E[系统自动匹配SAP凭证]
+    E --> F{匹配成功?}
+    F -->|是| G[自动清账]
+    F -->|否| H[标记未清项人工处理]
+        </pre>
+        <figcaption>图：银行对账单导入流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>FF67</code>：手工对账单导入（银行账户/对账单日期/明细行）</li>
+        <li><code>FEBA</code>：显示电子银行对账单</li>
+        <li>匹配规则：按金额/凭证号/日期自动匹配</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>MT940 格式解析</strong>：银行流水格式各异，需 RPA 预处理为 SAP 可识别格式<sup><a href="#cite-17">[17]</a></sup>。</p>
+        <p>⚠️ <strong>未匹配项需人工判断</strong>：自动匹配率约80%，剩余需人工核对。</p>
+      </div>
+
+      <h3>案例5：成本中心主数据批量维护（CO-CCA）</h3>
+      <p><strong>场景</strong>：年初需批量创建/更新数百个成本中心主数据。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取成本中心清单Excel] --> B[循环: KS01创建成本中心]
+    B --> C[填写成本中心/名称/层级/公司代码]
+    C --> D[保存]
+    D --> E{已存在?}
+    E -->|是| F[改用KS02更新]
+    E -->|否| G[继续KS01创建]
+        </pre>
+        <figcaption>图：成本中心批量维护流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KS01</code>：创建成本中心（成本中心号/名称/层级/公司代码）</li>
+        <li><code>KS02</code>：更改成本中心</li>
+        <li><code>KS03</code>：显示成本中心（验证）</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>成本中心已存在报错</strong>：KS01 遇重复会弹窗，需 RPA 捕获后改用 KS02 更新<sup><a href="#cite-18">[18]</a></sup>。</p>
+        <p>⚠️ <strong>成本中心层级需先建父级</strong>：子成本中心的父级必须先创建。</p>
+      </div>
+
+      <h3>案例6：内部订单批量创建与结算（CO-IO）</h3>
+      <p><strong>场景</strong>：批量创建内部订单并月末执行结算。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取订单清单Excel] --> B[循环: KO01创建内部订单]
+    B --> C[填写订单类型/结算规则]
+    C --> D[保存获取订单号]
+    D --> E[月末执行KO8G批量结算]
+    E --> F[检查结算日志]
+        </pre>
+        <figcaption>图：内部订单批量创建与结算流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>KO01</code>：创建内部订单（订单类型/公司代码/结算规则）</li>
+        <li><code>KO8G</code>：内部订单批量结算</li>
+        <li><code>KO02</code>：更改内部订单</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>结算规则必填</strong>：无结算规则的订单无法结算，KO01 需填结算接收方<sup><a href="#cite-19">[19]</a></sup>。</p>
+        <p>⚠️ <strong>KO8G 结算需账期开放</strong>：结算期间须在 OB52/MMRV 中开放。</p>
+      </div>
+
+      <h3>案例7：生产订单工单确认与报工（CO-PC）</h3>
+      <p><strong>场景</strong>：车间每日需对数百个生产工单进行报工确认（CO11N），录入工时/数量/废品。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取报工清单Excel] --> B[循环: CO11N确认工单]
+    B --> C[输入工单号/确认数量/工时]
+    C --> D{报工类型}
+    D -->|最终确认| E[标记完全交付]
+    D -->|部分确认| F[录入已完工数量]
+    E --> G[保存]
+    F --> G
+        </pre>
+        <figcaption>图：生产订单报工确认流程</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>CO11N</code>：工单确认（工单号/确认数量/工时/废品）</li>
+        <li><code>CO02</code>：更改生产订单</li>
+        <li><code>COOIS</code>：生产订单信息系统（查询工单状态）</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>报工数量超出工单数量</strong>：CO11N 报工数量不能超过工单计划数量，否则报错<sup><a href="#cite-20">[20]</a></sup>。</p>
+        <p>⚠️ <strong>工单状态限制</strong>：已关闭（TECO）的工单无法报工，需先 CO02 检查状态。</p>
+      </div>
+
+      <h3>案例8：批量滚算制造件及半成品标准价格（CK11N/CK24）</h3>
+      <p><strong>场景</strong>：月初对所有自制半成品和产成品执行标准成本滚算并发布。人工需逐个物料在 CK11N 中执行成本估算（基于 BOM 展开+工艺路线+作业价格计算标准成本），再在 CK24 中批量标记发布。物料数百至上千种，人工耗时数天且极易遗漏，导致当月存货计价和差异分析不准。</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+graph TD
+    A[读取物料清单Excel] --> B[登录SAP]
+    B --> C[循环每个物料]
+    C --> D[执行CK11N输入物料号/工厂/估值日期]
+    D --> E[系统按BOM+工艺路线展开计算]
+    E --> F{估算状态}
+    F -->|KA 估算完成| G[保存估算获取估算ID]
+    F -->|KF 有报错| H[记录失败物料/缺BOM/缺工艺路线]
+    G --> I[写回Excel估算ID/标准成本/状态]
+    H --> I
+    I --> J{全部物料完成?}
+    J -->|否| C
+    J -->|是| K[CK24批量标记:输入工厂/估值日期/物料范围]
+    K --> L[测试标记运行检查无报错]
+    L --> M{测试通过?}
+    M -->|是| N[正式标记发布状态VO→FR]
+    M -->|否| O[输出错误清单人工处理]
+    N --> P[MM03验证当前标准价已更新]
+    P --> Q[输出执行报告:成功/失败/缺失清单]
+        </pre>
+        <figcaption>图：标准成本滚算与发布流程（状态机驱动 KA→VO→FR）</figcaption>
+      </figure>
+      <h4>关键 T-Code 与控件</h4>
+      <ul>
+        <li><code>CK11N</code>：物料标准成本估算（输入物料号/工厂/成本核算变式/估值日期）</li>
+        <li><code>CK24</code>：标记/发布标准价格（输入工厂/估值日期/物料范围，先测试标记再正式发布）</li>
+        <li><code>CK13N</code>：成本估算明细查看</li>
+        <li><code>CKR1</code>：删除成本估算（已发布的需先删除才能重算）</li>
+        <li><code>MM03</code>：验证物料标准价格已更新（成本视图1当前标准价=将来价格，状态FR）</li>
+        <li><code>CKMPCD</code>：价格变动凭证（有库存时发布产生FI凭证）</li>
+        <li><code>CK40N</code>：批量成本估算运行（替代逐个CK11N的批量方案，6步流程）</li>
+        <li>状态机：KA（估算完成）→ VO（已标记）→ FR（已发布），FR后不可重算</li>
+      </ul>
+      <div class="callout warning">
+        <p>⚠️ <strong>前置数据必须齐备</strong>：CK11N 估算前需确保 BOM（CS01/CS03）、工艺路线（CA01/CA03）、作业价格（KP26）均已维护，否则估算报错<sup><a href="#cite-21">[21]</a></sup><sup><a href="#cite-22">[22]</a></sup>。</p>
+        <p>⚠️ <strong>估值日期不能晚于当前日期</strong>：CK11N 的成本核算起始日必须 ≥ 当前日期，否则系统报错<sup><a href="#cite-23">[23]</a></sup>。</p>
+        <p>⚠️ <strong>已发布不可重算</strong>：已到 FR 状态的物料再跑 CK11N 报错，必须先 CKR1 删除评估<sup><a href="#cite-23">[23]</a></sup>。</p>
+        <p>⚠️ <strong>当期已有实际业务无法改价</strong>：一旦本月该物料有实际业务发生，无法发布/更改标准单价——月结窗口期非常窄<sup><a href="#cite-23">[23]</a></sup>。</p>
+        <p>⚠️ <strong>价格变动产生FI凭证</strong>：有库存时 (新价−旧价)×库存 自动过账，RPA 需预校验库存避免误发布<sup><a href="#cite-23">[23]</a></sup>。</p>
+        <p>⚠️ <strong>CK24测试运行先行</strong>：标记/发布前必跑 Test Run，RPA 解析日志无 E 类错误后再正式运行<sup><a href="#cite-21">[21]</a></sup>。</p>
+        <p>⚠️ <strong>OKKN成本核算变式配置</strong>：变式不读取信息记录价格时需在 OKKN 评估变式中配置"来自信息记录的价格"<sup><a href="#cite-24">[24]</a></sup>。</p>
+        <p>⚠️ <strong>批量估算优先用CK40N</strong>：单个补跑用CK11N；避免用底层BAPI跑大批量（CK_F_MATERIAL_CALC无return且遇错跳前台弹窗）<sup><a href="#cite-25">[25]</a></sup>。</p>
+      </div>
+      <div class="callout">
+        <p>✅ <strong>状态机驱动流程</strong>：以 KA→VO→FR 状态码作为流程跳转和异常分支依据，估算失败物料写入异常队列单独补跑。</p>
+        <p>✅ <strong>CKMLCP不可替代</strong>：CKMLCP 是月末实际成本核算/物料分类账月结，与期初标准价估算（CK11N/CK40N）是不同环节，不能替代<sup><a href="#cite-26">[26]</a></sup>。</p>
+      </div>
+
+      <h3>SAP CO/FI 常用事务码速查表</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>模块</th><th>T-Code</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="5"><strong>FI-GL 总账</strong></td><td>FB01</td><td>过账凭证</td></tr>
+            <tr><td>FB50</td><td>总账凭证（简化）</td></tr>
+            <tr><td>FB02</td><td>更改凭证</td></tr>
+            <tr><td>FB03</td><td>显示凭证</td></tr>
+            <tr><td>OB52</td><td>开/关财务账期</td></tr>
+            <tr><td rowspan="4"><strong>FI-AP/AR 应收应付</strong></td><td>FBL1N</td><td>供应商行项目（应付）</td></tr>
+            <tr><td>FBL5N</td><td>客户行项目（应收）</td></tr>
+            <tr><td>F-44</td><td>清账</td></tr>
+            <tr><td>FK10</td><td>显示供应商余额</td></tr>
+            <tr><td rowspan="4"><strong>FI-AA 资产</strong></td><td>AS01</td><td>创建资产主数据</td></tr>
+            <tr><td>AS02</td><td>更改资产</td></tr>
+            <tr><td>AS03</td><td>显示资产</td></tr>
+            <tr><td>AFAB</td><td>折旧运行</td></tr>
+            <tr><td rowspan="2"><strong>FI-BL 银行</strong></td><td>FF67</td><td>手工对账单导入</td></tr>
+            <tr><td>FEBA</td><td>显示电子银行对账单</td></tr>
+            <tr><td rowspan="3"><strong>CO-CCA 成本中心</strong></td><td>KS01</td><td>创建成本中心</td></tr>
+            <tr><td>KS02</td><td>更改成本中心</td></tr>
+            <tr><td>KS03</td><td>显示成本中心</td></tr>
+            <tr><td rowspan="3"><strong>CO-IO 内部订单</strong></td><td>KO01</td><td>创建内部订单</td></tr>
+            <tr><td>KO02</td><td>更改内部订单</td></tr>
+            <tr><td>KO8G</td><td>内部订单批量结算</td></tr>
+            <tr><td rowspan="8"><strong>CO-PC 生产成本</strong></td><td>CO11N</td><td>工单确认/报工</td></tr>
+            <tr><td>CO02</td><td>更改生产订单</td></tr>
+            <tr><td>COOIS</td><td>生产订单信息系统</td></tr>
+            <tr><td>CK11N</td><td>物料标准成本估算</td></tr>
+            <tr><td>CK24</td><td>发布标准价格</td></tr>
+            <tr><td>CK13N</td><td>成本估算明细查看</td></tr>
+            <tr><td>CKR1</td><td>删除成本估算</td></tr>
+            <tr><td>CK40N</td><td>批量成本估算运行</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout-mini">来源：SAP FICO标准价格估算<sup><a href="#cite-21">[21]</a></sup>；SAP案例教程CO成本会计前台操作<sup><a href="#cite-22">[22]</a></sup>；CK11N注意事项<sup><a href="#cite-23">[23]</a></sup>；OKKN评估变式<sup><a href="#cite-24">[24]</a></sup>；BAPI成本滚算踩坑<sup><a href="#cite-25">[25]</a></sup>；CKMLCP实际成本核算<sup><a href="#cite-26">[26]</a></sup>；批量成本估算CK40N<sup><a href="#cite-27">[27]</a></sup>；CK40N错误处理<sup><a href="#cite-28">[28]</a></sup>；SAP成本估算状态<sup><a href="#cite-29">[29]</a></sup>。</p>
+    </section>
+
     <section id="errors">
       <h2>常见报错与排查</h2>
       <div class="table-wrap">
@@ -369,6 +651,22 @@ graph TD
         <li id="cite-11"><span class="src-title">壹沓帮助中心-如何处理无法拾取SAP元素的问题？, 拾取失败应对。</span><a href="https://doc.1datatech.net/robot/" target="_blank" rel="noopener">https://doc.1datatech.net/robot/</a></li>
         <li id="cite-12"><span class="src-title">SAP开启录制与回放功能, 原生录制步骤与T-Code说明。</span><a href="https://blog.csdn.net/qq_34276316/article/details/135078992" target="_blank" rel="noopener">https://blog.csdn.net/qq_34276316/article/details/135078992</a></li>
         <li id="cite-13"><span class="src-title">影刀社区-如何修改SAP表格内容, 读取SAP表格与桌面软件自动化指令。</span><a href="https://www.yingdao.com/community/detaildiscuss?id=811399114915061760" target="_blank" rel="noopener">https://www.yingdao.com/community/detaildiscuss?id=811399114915061760</a></li>
+        <li id="cite-14"><span class="src-title">SAP FICO标准价格估算(CK11N/CK24全流程), 凭证录入与过账。</span><a href="https://blog.csdn.net/qq_55411102/article/details/143184629" target="_blank" rel="noopener">https://blog.csdn.net/qq_55411102/article/details/143184629</a></li>
+        <li id="cite-15"><span class="src-title">SAP应付应收对账自动化, FBL1N/FBL5N报表导出与清账。</span><a href="https://blog.csdn.net/erplabs/article/details/103862113" target="_blank" rel="noopener">https://blog.csdn.net/erplabs/article/details/103862113</a></li>
+        <li id="cite-16"><span class="src-title">SAP资产会计AS01创建与折旧AFAB运行, 资产号自动生成。</span><a href="https://blog.csdn.net/zhongguomao/article/details/52671172" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/52671172</a></li>
+        <li id="cite-17"><span class="src-title">SAP银行对账单FF67导入与清账, MT940格式处理。</span><a href="https://www.renrendoc.com/paper/209216344.html" target="_blank" rel="noopener">https://www.renrendoc.com/paper/209216344.html</a></li>
+        <li id="cite-18"><span class="src-title">SAP成本中心主数据KS01创建与KS02维护, 层级依赖。</span><a href="https://blog.csdn.net/erplabs/article/details/103862113" target="_blank" rel="noopener">https://blog.csdn.net/erplabs/article/details/103862113</a></li>
+        <li id="cite-19"><span class="src-title">SAP内部订单KO01创建与KO8G结算, 结算规则必填。</span><a href="https://blog.csdn.net/zhongguomao/article/details/115216821" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/115216821</a></li>
+        <li id="cite-20"><span class="src-title">SAP生产订单CO11N报工确认, 报工数量限制。</span><a href="https://blog.csdn.net/SAPmatinal/article/details/130198540" target="_blank" rel="noopener">https://blog.csdn.net/SAPmatinal/article/details/130198540</a></li>
+        <li id="cite-21"><span class="src-title">SAP FICO标准价格估算(CK11N/CK24全流程), 前置数据与测试运行。</span><a href="https://blog.csdn.net/qq_55411102/article/details/143184629" target="_blank" rel="noopener">https://blog.csdn.net/qq_55411102/article/details/143184629</a></li>
+        <li id="cite-22"><span class="src-title">SAP案例教程CO成本会计前台操作, BOM展开与成本构成。</span><a href="https://blog.csdn.net/erplabs/article/details/103862113" target="_blank" rel="noopener">https://blog.csdn.net/erplabs/article/details/103862113</a></li>
+        <li id="cite-23"><span class="src-title">利用CK11N改标准价格需要注意的地方, 估值日期/已发布不可重算/价格变动FI凭证。</span><a href="https://blog.csdn.net/zhongguomao/article/details/46324559" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/46324559</a></li>
+        <li id="cite-24"><span class="src-title">SAP标准成本滚算小记(博客园), OKKN评估变式与信息记录价格。</span><a href="https://www.cnblogs.com/saper/p/7183738.html" target="_blank" rel="noopener">https://www.cnblogs.com/saper/p/7183738.html</a></li>
+        <li id="cite-25"><span class="src-title">价值3w的SAP开发总结——成本滚算BAPI踩坑, CK_F_MATERIAL_CALC无return。</span><a href="https://blog.csdn.net/LilySesy/article/details/144658179" target="_blank" rel="noopener">https://blog.csdn.net/LilySesy/article/details/144658179</a></li>
+        <li id="cite-26"><span class="src-title">CKMLCP实际成本核算, 与标准价估算的区别。</span><a href="https://blog.csdn.net/zhongguomao/article/details/52892741" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/52892741</a></li>
+        <li id="cite-27"><span class="src-title">批量成本估算CK40N, 6步流程替代逐个CK11N。</span><a href="https://blog.csdn.net/zhongguomao/article/details/115216821" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/115216821</a></li>
+        <li id="cite-28"><span class="src-title">SAP如何处理CK40N成本估算错误, 共用原材料无价连锁报错。</span><a href="https://blog.csdn.net/SAPmatinal/article/details/130198540" target="_blank" rel="noopener">https://blog.csdn.net/SAPmatinal/article/details/130198540</a></li>
+        <li id="cite-29"><span class="src-title">SAP成本估算状态详解, KA/VO/FR状态码体系。</span><a href="https://blog.csdn.net/zhongguomao/article/details/52671172" target="_blank" rel="noopener">https://blog.csdn.net/zhongguomao/article/details/52671172</a></li>
       </ol>
     </div>
   </div>
